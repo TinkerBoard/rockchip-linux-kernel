@@ -40,6 +40,8 @@ static int ver_show(struct seq_file *m, void *v)
 		boardver = "2.04A";
 	else if (hwid == 5)
 		boardver = "2.04B";
+	else if (hwid == 6)
+		boardver = "2.04C";
 	else
 		boardver = "unknown";
 
