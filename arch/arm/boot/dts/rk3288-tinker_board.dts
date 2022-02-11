@@ -540,6 +540,7 @@
 				};
 			};
 
+/*
 			vcc18_codec: LDO_REG4 {
 				regulator-always-on;
 				regulator-boot-on;
@@ -549,6 +550,19 @@
 				regulator-state-mem {
 					regulator-on-in-suspend;
 					regulator-suspend-microvolt = <1800000>;
+				};
+			};
+*/
+
+			vcc33_ldo4: LDO_REG4 {
+				regulator-name = "vcc33_ldo4";
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <3300000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-state-mem {
+					regulator-on-in-suspend;
+					regulator-suspend-microvolt = <3300000>;
 				};
 			};
 
@@ -962,6 +976,7 @@
 	gpio_init_config {
 		gpio_init: gpio-init {
                         rockchip,pins =
+				<7 9 RK_FUNC_GPIO &pcfg_pull_down>,
 				<7 13 RK_FUNC_GPIO &pcfg_pull_down>,
 				<7 22 RK_FUNC_GPIO &pcfg_pull_none>,
 				<7 23 RK_FUNC_GPIO &pcfg_pull_none>;

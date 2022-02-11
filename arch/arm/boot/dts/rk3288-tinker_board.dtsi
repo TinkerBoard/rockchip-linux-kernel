@@ -65,7 +65,7 @@
 		};
 	};
 
-	sound-simple-card {
+	sound_simple_card: sound-simple-card {
 		compatible = "simple-audio-card";
 		simple-audio-card,format = "i2s";
 		simple-audio-card,name = "rockchip,miniarm-codec";
@@ -79,6 +79,60 @@
 		simple-audio-card,codec {
 			sound-dai = <&hdmi>;
 		};
+	};
+
+	es8316_sound: es8316-sound {
+		compatible = "simple-audio-card";
+		simple-audio-card,format = "i2s";
+		simple-audio-card,name = "rockchip,es8316-codec";
+		simple-audio-card,mclk-fs = <512>;
+		simple-audio-card,widgets =
+			"Microphone", "Microphone Jack",
+			"Headphone", "Headphone Jack";
+		simple-audio-card,routing =
+			"MIC1", "Microphone Jack",
+			"MIC2", "Microphone Jack",
+			"Microphone Jack", "micbias1",
+			"Headphone Jack", "HPOL",
+			"Headphone Jack", "HPOR";
+
+		simple-audio-card,dai-link@0 {
+			format = "i2s";
+			cpu {
+				sound-dai = <&i2s>;
+			};
+
+			codec {
+				sound-dai = <&es8316>;
+			};
+		};
+
+		simple-audio-card,dai-link@1 {
+			format = "i2s";
+			cpu {
+				sound-dai = <&i2s>;
+			};
+
+			codec {
+				sound-dai = <&hdmi>;
+			};
+		};
+	};
+
+	spdif_sound: spdif-sound {
+		compatible = "simple-audio-card";
+		simple-audio-card,name = "ROCKCHIP,SPDIF";
+		simple-audio-card,cpu {
+			sound-dai = <&spdif>;
+		};
+		simple-audio-card,codec {
+			sound-dai = <&spdif_out>;
+		};
+	};
+
+	spdif_out: spdif-out {
+		compatible = "linux,spdif-dit";
+		#sound-dai-cells = <0>;
 	};
 
 /*
@@ -270,8 +324,37 @@
 	status = "okay";
 };
 
+&sound_simple_card {
+	status = "disabled";
+};
+
+&es8316_sound {
+	status = "disabled";
+};
+
+&spdif_sound {
+	status = "disabled";
+};
+
 &i2c0 {
 	status = "okay";
+};
+
+&i2c2 {
+	status = "okay";
+
+	es8316: es8316@11 {
+		status = "disabled";
+		#sound-dai-cells = <0>;
+		compatible = "everest,es8316";
+		reg = <0x11>;
+		clocks = <&cru SCLK_I2S0_OUT>;
+		clock-names = "mclk";
+		spk-con-gpio = <&gpio7 15 GPIO_ACTIVE_HIGH>;
+		hp-det-gpio = <&gpio7 4 GPIO_ACTIVE_LOW>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&i2s0_mclk>;
+	};
 };
 
 &i2c3 {
