@@ -44,3 +44,4 @@ obj-$(CONFIG_SND_SOC_ROCKCHIP_RT5651_RK628) += snd-soc-rockchip-rt5651-rk628.o
 obj-$(CONFIG_SND_SOC_ROCKCHIP_RT5651_TC358749) += snd-soc-rockchip-rt5651-tc358749x.o
 obj-$(CONFIG_SND_SOC_ROCKCHIP_CDNDP) += snd-soc-rockchip-cdndp.o
 obj-$(CONFIG_SND_SOC_HIFIBERRY_DACPLUS) += snd-soc-hifiberry-dacplus.o
+obj-$(CONFIG_SND_SOC_SEEEDVOICEHAT_CARD) += seeedvoicehat/
