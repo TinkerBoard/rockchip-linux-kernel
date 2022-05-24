@@ -2617,7 +2617,7 @@ static int dw_hdmi_connector_get_modes(struct drm_connector *connector)
 					     connector);
 	struct edid *edid;
 	struct drm_display_mode *mode;
-	const u8 def_modes[6] = {4, 16, 31, 19, 17, 2};
+	const u8 def_modes[1] = {4};
 	struct drm_display_info *info = &connector->display_info;
 	struct hdr_static_metadata *metedata =
 			&connector->display_info.hdmi.hdr_panel_metadata;
@@ -2641,7 +2641,7 @@ static int dw_hdmi_connector_get_modes(struct drm_connector *connector)
 		drm_mode_connector_update_hdr_property(connector, metedata);
 		kfree(edid);
 	} else {
-		hdmi->sink_is_hdmi = true;
+		hdmi->sink_is_hdmi = false;
 		hdmi->sink_has_audio = true;
 		for (i = 0; i < sizeof(def_modes); i++) {
 			mode = drm_display_mode_from_vic_index(connector,
