@@ -33,6 +33,8 @@ snd-soc-rockchip-rt5651-rk628-objs := rockchip_rt5651_rk628.o
 snd-soc-rockchip-rt5651-tc358749x-objs := rockchip_rt5651_tc358749x.o
 snd-soc-rockchip-cdndp-objs := rockchip_cdndp.o
 snd-soc-hifiberry-dacplus-objs := hifiberry_dacplus.o
+snd-soc-iqaudio-dac-objs := iqaudio-dac.o
+snd-soc-iqaudio-digi-objs := iqaudio-digi.o
 
 obj-$(CONFIG_SND_SOC_ROCKCHIP_DA7219) += snd-soc-rockchip-da7219.o
 obj-$(CONFIG_SND_SOC_ROCKCHIP_HDMI_ANALOG) += snd-soc-rockchip-hdmi-analog.o
@@ -44,4 +46,6 @@ obj-$(CONFIG_SND_SOC_ROCKCHIP_RT5651_RK628) += snd-soc-rockchip-rt5651-rk628.o
 obj-$(CONFIG_SND_SOC_ROCKCHIP_RT5651_TC358749) += snd-soc-rockchip-rt5651-tc358749x.o
 obj-$(CONFIG_SND_SOC_ROCKCHIP_CDNDP) += snd-soc-rockchip-cdndp.o
 obj-$(CONFIG_SND_SOC_HIFIBERRY_DACPLUS) += snd-soc-hifiberry-dacplus.o
+obj-$(CONFIG_SND_SOC_IQAUDIO_DAC) += snd-soc-iqaudio-dac.o
+obj-$(CONFIG_SND_SOC_IQAUDIO_DIGI) += snd-soc-iqaudio-digi.o
 obj-$(CONFIG_SND_SOC_SEEEDVOICEHAT_CARD) += seeedvoicehat/
