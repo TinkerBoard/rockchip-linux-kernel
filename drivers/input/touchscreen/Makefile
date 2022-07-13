@@ -104,3 +104,4 @@ obj-$(CONFIG_TOUCHSCREEN_ROHM_BU21023)	+= rohm_bu21023.o
 obj-$(CONFIG_TOUCHSCREEN_VTL_CT36X)	+= vtl_ts/
 obj-$(CONFIG_TOUCHSCREEN_TINKER_FT5406) += tinker_ft5406.o
 obj-$(CONFIG_TOUCHSCREEN_GT1X)		+= gt1x/
+obj-y					+= ilitek/

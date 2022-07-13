@@ -685,6 +685,17 @@
 		compass-debug = <1>;
 		status = "okay";
 	};
+
+	ilitek@41 {
+		compatible = "tchip,ilitek";
+		reg = <0x41>;
+		interrupt-parent = <&gpio0>;
+		interrupts = <17 0x0>;
+		ilitek,irq-gpio = <&gpio0 17 0x0>;
+		ilitek,vbus = "vcc_i2c";
+		ilitek,vdd = "vdd";
+		ilitek,name = "ilitek_i2c";
+	};
 };
 
 &io_domains {
