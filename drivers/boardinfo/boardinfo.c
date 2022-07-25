@@ -72,6 +72,8 @@ static int boardinfo_probe(struct platform_device *pdev)
 		boardver = "1.03";
 	else if (strcmp(adc5_bid, "4") == 0)
 		boardver = "1.04";
+	else if (strcmp(adc5_bid, "5") == 0)
+		boardver = "1.05";
 
 	printk("boardinfo = %s\n", boardinfo);
 	printk("boardver = %s\n", boardver);
