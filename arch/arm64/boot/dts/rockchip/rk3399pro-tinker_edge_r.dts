@@ -8,6 +8,7 @@
 #include <dt-bindings/display/drm_mipi_dsi.h>
 #include <dt-bindings/sensor-dev.h>
 #include <dt-bindings/pwm/pwm.h>
+#include <dt-bindings/usb/pd.h>
 #include "rk3399pro.dtsi"
 #include "rk3399-linux.dtsi"
 #include "rk3399-opp.dtsi"
@@ -294,7 +295,7 @@
 
 &cdn_dp {
 	status = "okay";
-	extcon = <&fusb0>;
+	extcon = <&fusb0>, <0>, <&rtusb0>;
 	phys = <&tcphy0_dp>;
 };
 
@@ -1092,6 +1093,28 @@
 		status = "okay";
 	};
 
+	rtusb0: rt1711h@4e {
+		status = "okay";
+		compatible = "richtek,rt1711h";
+		reg = <0x4e>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&fusb0_int>;
+		interrupt-parent = <&gpio1>;
+		interrupts = <RK_PA2 IRQ_TYPE_LEVEL_LOW>;
+		vbus-5v-gpios = <&gpio2 RK_PD2 GPIO_ACTIVE_HIGH>;
+		usb_con: connector {
+			compatible = "usb-c-connector";
+			label = "USB-C";
+			data-role = "dual";
+			power-role = "dual";
+			try-power-role = "source";
+			source-pdos = <PDO_FIXED(5000, 500, PDO_FIXED_USB_COMM)>;
+			sink-pdos = <PDO_FIXED(5000, 500, PDO_FIXED_USB_COMM)>;
+			op-sink-microwatt = <1000000>;
+			typec-altmodes = <0xff01 1 0x001c0c00 1>;
+		};
+	};
+
 	vdd_gpu: fan53555@60 {
 		compatible = "fcs,fan53555";
 		reg = <0x60>;
@@ -1326,7 +1349,7 @@
 };
 
 &tcphy0 {
-	extcon = <&fusb0>;
+	extcon = <&fusb0>, <&rtusb0>;
 	status = "okay";
 };
 
@@ -1342,7 +1365,7 @@
 
 &u2phy0 {
 	status = "okay";
-	extcon = <&fusb0>;
+	extcon = <&fusb0>, <&rtusb0>;
 
 	u2phy0_otg: otg-port {
 		status = "okay";
@@ -1391,7 +1414,7 @@
 };
 
 &usbdrd3_0 {
-	extcon = <&fusb0>;
+	extcon = <&fusb0>, <&rtusb0>;
 	status = "okay";
 };
 

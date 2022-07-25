@@ -69,6 +69,8 @@
 #define CDN_DPCD_TIMEOUT_MS	5000
 #define CDN_DP_FIRMWARE		"rockchip/dptx.bin"
 
+extern int get_board_id(void);
+
 struct cdn_dp_data {
 	u8 max_phy;
 };
@@ -1752,6 +1754,7 @@ static int cdn_dp_probe(struct platform_device *pdev)
 	struct extcon_dev *extcon;
 	struct phy *phy;
 	int ret, i;
+	int board_id = get_board_id();
 
 	dp = devm_kzalloc(dev, sizeof(*dp), GFP_KERNEL);
 	if (!dp)
@@ -1762,8 +1765,15 @@ static int cdn_dp_probe(struct platform_device *pdev)
 	dp_data = (struct cdn_dp_data *)match->data;
 
 	for (i = 0; i < dp_data->max_phy; i++) {
-		extcon = extcon_get_edev_by_phandle(dev, i);
-		phy = devm_of_phy_get_by_index(dev, dev->of_node, i);
+		if (board_id == 0 || board_id == 9 ||
+		    board_id == 12 || board_id == 18) {
+			// phy0 to extcon0, phy1 to extcon1
+			extcon = extcon_get_edev_by_phandle(dev, i);
+		} else {
+			// phy0 to extcon2, phy1 to extcon3
+			extcon = extcon_get_edev_by_phandle(dev, i + 2);
+		}
+			phy = devm_of_phy_get_by_index(dev, dev->of_node, i);
 
 		if (PTR_ERR(extcon) == -EPROBE_DEFER ||
 		    PTR_ERR(phy) == -EPROBE_DEFER)

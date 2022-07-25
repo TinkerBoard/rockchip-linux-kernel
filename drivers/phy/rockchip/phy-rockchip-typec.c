@@ -386,6 +386,8 @@
 
 #define DP_DEFAULT_RATE			162000
 
+extern int get_board_id(void);
+
 struct phy_reg {
 	u16 value;
 	u32 addr;
@@ -1645,6 +1647,7 @@ static int rockchip_typec_phy_probe(struct platform_device *pdev)
 	struct phy_provider *phy_provider;
 	struct resource *res;
 	int ret;
+	int board_id = get_board_id();
 
 	tcphy = devm_kzalloc(dev, sizeof(*tcphy), GFP_KERNEL);
 	if (!tcphy)
@@ -1666,7 +1669,11 @@ static int rockchip_typec_phy_probe(struct platform_device *pdev)
 	typec_phy_pre_init(tcphy);
 
 	if (device_property_read_bool(dev, "extcon")) {
-		tcphy->extcon = extcon_get_edev_by_phandle(dev, 0);
+		if (board_id == 0 || board_id == 9 ||
+		    board_id == 12 || board_id == 18)
+			tcphy->extcon = extcon_get_edev_by_phandle(dev, 0);
+		else
+			tcphy->extcon = extcon_get_edev_by_phandle(dev, 1);
 		if (IS_ERR(tcphy->extcon)) {
 			if (PTR_ERR(tcphy->extcon) != -EPROBE_DEFER)
 				dev_err(dev, "Invalid or missing extcon\n");

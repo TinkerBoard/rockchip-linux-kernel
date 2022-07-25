@@ -100,7 +100,7 @@
 
 static u8 fusb30x_port_used;
 static struct fusb30x_chip *fusb30x_port_info[256];
-extern int boardver_show(void);
+extern int get_board_id(void);
 
 static bool is_write_reg(struct device *dev, unsigned int reg)
 {
@@ -3353,11 +3353,11 @@ static int fusb_initialize_gpio(struct fusb30x_chip *chip)
 		return PTR_ERR(chip->gpio_int);
 
 	/* some board support vbus with other ways */
-	if (boardver_show() >= 2) {
-		chip->gpio_vbus_5v = devm_gpiod_get_optional(chip->dev, "vbus2-5v",
+	if (get_board_id() == 9) {
+		chip->gpio_vbus_5v = devm_gpiod_get_optional(chip->dev, "vbus-5v",
 							     GPIOD_OUT_LOW);
 	} else {
-		chip->gpio_vbus_5v = devm_gpiod_get_optional(chip->dev, "vbus-5v",
+		chip->gpio_vbus_5v = devm_gpiod_get_optional(chip->dev, "vbus2-5v",
 							     GPIOD_OUT_LOW);
 	}
 	if (IS_ERR(chip->gpio_vbus_5v))
@@ -3441,6 +3441,11 @@ static int fusb30x_probe(struct i2c_client *client,
 	struct PD_CAP_INFO *pd_cap_info;
 	int ret;
 	char *string[2];
+	int board_id = get_board_id();
+
+	if (board_id != 0 && board_id != 9 &&
+	    board_id != 12 && board_id != 18)
+		return -ENODEV;
 
 	chip = devm_kzalloc(&client->dev, sizeof(*chip), GFP_KERNEL);
 	if (!chip)

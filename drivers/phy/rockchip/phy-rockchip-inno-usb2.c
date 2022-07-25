@@ -44,7 +44,7 @@
 #define BYPASS_SCHEDULE_DELAY	(2 * HZ)
 
 struct rockchip_usb2phy;
-extern int boardver_show(void);
+extern int get_board_id(void);
 
 enum rockchip_usb2phy_port_id {
 	USB2PHY_PORT_OTG,
@@ -447,9 +447,14 @@ static int rockchip_usb2phy_extcon_register(struct rockchip_usb2phy *rphy)
 	int ret;
 	struct device_node *node = rphy->dev->of_node;
 	struct extcon_dev *edev;
+	int board_id = get_board_id();
 
 	if (of_property_read_bool(node, "extcon")) {
-		edev = extcon_get_edev_by_phandle(rphy->dev, 0);
+		if (board_id == 0 || board_id == 9 ||
+		    board_id == 12 || board_id == 18)
+			edev = extcon_get_edev_by_phandle(rphy->dev, 0);
+		else
+			edev = extcon_get_edev_by_phandle(rphy->dev, 1);
 		if (IS_ERR(edev)) {
 			if (PTR_ERR(edev) != -EPROBE_DEFER)
 				dev_err(rphy->dev, "Invalid or missing extcon\n");
@@ -2175,7 +2180,7 @@ static int rockchip_usb2phy_pm_suspend(struct device *dev)
 		    rport->bvalid_irq > 0)
 			enable_irq_wake(rport->bvalid_irq);
 
-		if (strcmp(dev_name(dev), "ff770000.syscon:usb2-phy@e450") || boardver_show() >= 2) {
+		if (strcmp(dev_name(dev), "ff770000.syscon:usb2-phy@e450") || get_board_id() != 9) {
 			/* activate the linestate to detect the next interrupt. */
 			mutex_lock(&rport->mutex);
 			ret = rockchip_usb2phy_enable_line_irq(rphy, rport, true);
