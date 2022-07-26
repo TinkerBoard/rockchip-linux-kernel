@@ -59,6 +59,7 @@
 	ADC5-BOARD-ID {
 		compatible = "ADC5-BOARD-ID";
 		boardver = "-1";
+		adc5-vcc = "-1";
 	};
 
 	clkin_gmac: external-gmac-clock {
