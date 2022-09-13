@@ -97,11 +97,29 @@ config SND_SOC_ROCKCHIP_HDMI_DP
 	  Say Y or M here if you want to add support for SoC audio on Rockchip
 	  boards using built-in HDMI and DP, such as RK3399 boards.
 
+config SND_SOC_HIFIBERRY_AMP
+	tristate "Support for the HifiBerry Amp"
+	select SND_SOC_TAS5713
+	help
+	  Say Y or M if you want to add support for the HifiBerry Amp amplifier board.
+
+config SND_SOC_HIFIBERRY_DAC
+	tristate "Support for HifiBerry DAC"
+	select SND_SOC_PCM5102A
+	help
+	  Say Y or M if you want to add support for HifiBerry DAC.
+
 config SND_SOC_HIFIBERRY_DACPLUS
 	tristate "Support for HifiBerry DAC+"
 	select SND_SOC_PCM512x_I2C
 	help
 	  Say Y or M if you want to add support for HifiBerry DAC+.
+
+config SND_SOC_HIFIBERRY_DIGI
+	tristate "Support for HifiBerry Digi"
+	select SND_SOC_WM8804_I2C
+	help
+	  Say Y or M if you want to add support for HifiBerry Digi S/PDIF output board.
 
 config SND_SOC_IQAUDIO_DAC
 	tristate "Support for IQaudIO-DAC"
@@ -114,6 +132,18 @@ config SND_SOC_IQAUDIO_DIGI
 	select SND_SOC_WM8804_I2C
 	help
 	  Say Y or M if you want to add support for IQAudIO Digital IO board.
+
+config SND_SOC_JUSTBOOM_DAC
+	tristate "Support for JustBoom DAC"
+	select SND_SOC_PCM512x_I2C
+	help
+	  Say Y or M if you want to add support for JustBoom DAC.
+
+config SND_SOC_JUSTBOOM_DIGI
+	tristate "Support for JustBoom Digi"
+	select SND_SOC_WM8804_I2C
+	help
+	  Say Y or M if you want to add support for JustBoom Digi.
 
 config SND_SOC_SEEEDVOICEHAT_CARD
 	tristate "Support for Seeed voice HAT sound card"
