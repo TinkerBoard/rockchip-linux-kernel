@@ -1372,4 +1372,10 @@ config TOUCHSCREEN_ZINITIX
 	  To compile this driver as a module, choose M here: the
 	  module will be called zinitix.
 
+config TOUCHSCREEN_ILITEK
+        tristate "Ilitek touchscreen support"
+        depends on I2C
+        help
+          Control Ilitek touch ic.
+
 endif
