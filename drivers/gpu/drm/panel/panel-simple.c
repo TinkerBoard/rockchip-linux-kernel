@@ -44,14 +44,49 @@
 #include "../bridge/sn65dsi8x/sn65dsi84.h"
 #include "../bridge/sn65dsi8x/sn65dsi86.h"
 
+#if defined(CONFIG_DRM_I2C_SN65DSI84)
 extern void sn65dsi84_loader_protect(bool on);
 extern void sn65dsi84_bridge_disable(void);
 extern bool sn65dsi84_is_connected(void);
+extern struct sn65dsi84_data *g_sn65dsi84;
+#else
+static void sn65dsi84_loader_protect(bool on) { return ; }
+static void sn65dsi84_bridge_disable(void) { return ; }
+static bool sn65dsi84_is_connected(void) { return false; }
+#endif
+
+#if defined(CONFIG_DRM_I2C_SN65DSI86)
 extern void sn65dsi86_loader_protect(bool on);
 extern void sn65dsi86_bridge_disable(void);
 extern bool sn65dsi86_is_connected(void);
-extern struct sn65dsi84_data *g_sn65dsi84;
 extern struct sn65dsi86_data *g_sn65dsi86;
+#else
+static void sn65dsi86_loader_protect(bool on) { return ; }
+static void sn65dsi86_bridge_disable(void) { return ; }
+static bool sn65dsi86_is_connected(void) { return false; }
+#endif
+
+#ifdef CONFIG_DRM_I2C_LT9211
+extern void lt9211_loader_protect(bool on);
+extern void lt9211_bridge_enable(int t);
+extern void lt9211_bridge_disable(void);
+extern bool lt9211_is_connected(void);
+extern void lt9211_set_videomode(struct videomode vm);
+extern bool lt9211_test_pattern(void);
+extern void lt9211_lvds_pattern_config(void);
+extern void lt9211_lvds_power_on(void);
+extern void lt9211_lvds_power_off(void);
+#else
+static void lt9211_loader_protect(bool on) { return ; }
+static void lt9211_bridge_enable(int t) { return ; }
+static void lt9211_bridge_disable(void) { return ; }
+static bool lt9211_is_connected(void) { return false; }
+static void lt9211_set_videomode(struct videomode vm) { return ; }
+static bool lt9211_test_pattern(void) { return false; }
+static void lt9211_lvds_pattern_config(void) { return ; }
+static void lt9211_lvds_power_on(void) { return ; }
+static void lt9211_lvds_power_off(void) { return ; }
+#endif
 
 struct panel_cmd_header {
 	u8 data_type;
@@ -69,11 +104,20 @@ struct panel_cmd_seq {
 	unsigned int cmd_cnt;
 };
 
+struct pwseq {
+	unsigned int t1;//VCC on to start lvds signal
+	unsigned int t2;//LVDS signal(start) to turn Backlihgt on
+	unsigned int t3;//Backlihgt(off) to stop lvds signal
+	unsigned int t4;//LVDS signal to turn VCC off
+	unsigned int t5;//VCC off to turn VCC on
+};
+
 struct panel_desc {
 	const struct drm_display_mode *modes;
 	unsigned int num_modes;
 	const struct display_timing *timings;
 	unsigned int num_timings;
+	struct pwseq pwseq_delay;
 
 	unsigned int bpc;
 
@@ -536,6 +580,9 @@ static int panel_simple_loader_protect(struct drm_panel *panel, bool on)
 
 		if (sn65dsi86_is_connected())
 			sn65dsi86_loader_protect(true);
+
+		if (lt9211_is_connected())
+			lt9211_loader_protect(true);
 	} else {
 		#if defined(CONFIG_TINKER_MCU)
 		if (tinker_mcu_is_connected(p->dsi_id)) {
@@ -569,6 +616,17 @@ static int panel_simple_disable(struct drm_panel *panel)
 
 	if (sn65dsi86_is_connected())
 		sn65dsi86_bridge_disable();
+
+	if (lt9211_is_connected()) {
+        if(p->desc->pwseq_delay.t3)
+            msleep(p->desc->pwseq_delay.t3);//backlight power off to stop lvds signal
+        lt9211_bridge_disable();
+        if(p->desc->pwseq_delay.t4)
+            msleep(p->desc->pwseq_delay.t4);//stop lvds signal to turn VCC off
+        lt9211_lvds_power_off();
+        if(p->desc->pwseq_delay.t5)
+            msleep(p->desc->pwseq_delay.t5);//lvds power off to turn on lvds power
+    }
 
 	if (p->desc->delay.disable)
 		panel_simple_sleep(p->desc->delay.disable);
@@ -650,6 +708,13 @@ static int panel_simple_prepare(struct drm_panel *panel)
 		tinker_mcu_ili9881c_screen_power_up(p->dsi_id);
 		tinker_ft5406_start_polling(p->dsi_id);
 	}
+/*
+	if (lt9211_is_connected()) {
+        lt9211_lvds_power_on();
+        if(p->desc->pwseq_delay.t1)
+            msleep(p->desc->pwseq_delay.t1);//lvds power on to lvds signal
+    }
+*/
 	#endif
 
 	gpiod_direction_output(p->enable_gpio, 1);
@@ -718,6 +783,12 @@ static int panel_simple_enable(struct drm_panel *panel)
 		tinker_ft5406_start_polling(p->dsi_id);
 	}
 
+	if (lt9211_is_connected()) {
+        lt9211_bridge_enable(p->desc->pwseq_delay.t1);
+		if(p->desc->pwseq_delay.t2)
+            msleep(p->desc->pwseq_delay.t2);//lvds signal to turn on backlight
+    }
+
 	if (p->desc->init_seq) {
 		if ((p->dsi) && tinker_mcu_is_connected(p->dsi_id))
 			err = panel_simple_xfer_dsi_cmd_seq(p, p->desc->init_seq);
@@ -735,6 +806,11 @@ static int panel_simple_enable(struct drm_panel *panel)
 		p->backlight->props.power = FB_BLANK_UNBLANK;
 		backlight_update_status(p->backlight);
 	}
+
+#ifdef CONFIG_DRM_I2C_LT9211
+	if (lt9211_is_connected() && lt9211_test_pattern())
+        lt9211_lvds_pattern_config();
+#endif
 
 	p->enabled = true;
 
@@ -3322,6 +3398,18 @@ static int panel_simple_of_get_desc_data(struct device *dev,
 	of_property_read_u32(np, "reset-delay-ms", &desc->delay.reset);
 	of_property_read_u32(np, "init-delay-ms", &desc->delay.init);
 
+#ifdef CONFIG_DRM_I2C_LT9211
+    if (lt9211_is_connected()) {
+        of_property_read_u32(np, "t1", &desc->pwseq_delay.t1);
+        of_property_read_u32(np, "t2", &desc->pwseq_delay.t2);
+        of_property_read_u32(np, "t3", &desc->pwseq_delay.t3);
+        of_property_read_u32(np, "t4", &desc->pwseq_delay.t4);
+        of_property_read_u32(np, "t5", &desc->pwseq_delay.t5);
+
+        printk("panel_simple_dsi_of_get_desc_data t1=%d t2=%d t3=%d t4=%d t5=%d\n", desc->pwseq_delay.t1,desc->pwseq_delay.t2,desc->pwseq_delay.t3,desc->pwseq_delay.t4,desc->pwseq_delay.t5);
+    }
+#endif
+
 	data = of_get_property(np, "panel-init-sequence", &len);
 	if (data) {
 		desc->init_seq = devm_kzalloc(dev, sizeof(*desc->init_seq),
@@ -3666,6 +3754,13 @@ static int panel_simple_dsi_of_get_desc_data(struct device *dev,
 	return 0;
 }
 
+void lt9211_setup_desc(struct panel_desc_dsi *desc)
+{
+    struct videomode vm;
+    drm_display_mode_to_videomode(desc->desc.modes, &vm);
+    lt9211_set_videomode(vm);
+}
+
 void sn65dsi84_setup_desc(struct panel_desc_dsi *desc)
 {
 	drm_display_mode_to_videomode(desc->desc.modes, &g_sn65dsi84->vm);
@@ -3691,6 +3786,7 @@ static int panel_simple_dsi_probe(struct mipi_dsi_device *dsi)
 	int err;
 	int dsi_id;
 
+	printk("panel_simple_dsi_probe+\n");
 	id = of_match_node(dsi_of_match, dsi->dev.of_node);
 	if (!id)
 		return -ENODEV;
@@ -3723,7 +3819,15 @@ static int panel_simple_dsi_probe(struct mipi_dsi_device *dsi)
 		}
 
 		sn65dsi86_setup_desc(d);
-	}
+	} else if (lt9211_is_connected()) {
+        err = panel_simple_dsi_of_get_desc_data(dev, d);
+        if (err) {
+            dev_err(dev, "failed to get desc data: %d\n", err);
+            return err;
+        }
+
+        lt9211_setup_desc(d);
+    }
 #else
 	if (!id->data) {
 		d = devm_kzalloc(dev, sizeof(*d), GFP_KERNEL);
