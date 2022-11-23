@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/*
+/**
  * USB Typec-C DisplayPort Alternate Mode driver
  *
  * Copyright (C) 2018 Intel Corporation
@@ -11,10 +11,8 @@
 #include <linux/delay.h>
 #include <linux/mutex.h>
 #include <linux/module.h>
-#include <linux/property.h>
 #include <linux/usb/pd_vdo.h>
 #include <linux/usb/typec_dp.h>
-//#include <drm/drm_connector.h>
 #include "displayport.h"
 
 #define DP_HEADER(_dp, ver, cmd)	(VDO((_dp)->alt->svid, 1, ver, cmd)	\
@@ -26,10 +24,6 @@ enum {
 	DP_CONF_UFP_D,
 	DP_CONF_DUAL_D,
 };
-
-/* Helper for setting/getting the pin assignement value to the configuration */
-#define DP_CONF_SET_PIN_ASSIGN(_a_)	((_a_) << 8)
-#define DP_CONF_GET_PIN_ASSIGN(_conf_)	(((_conf_) & GENMASK(15, 8)) >> 8)
 
 /* Pin assignments that use USB3.1 Gen2 signaling to carry DP protocol */
 #define DP_PIN_ASSIGN_GEN2_BR_MASK	(BIT(DP_PIN_ASSIGN_A) | \
@@ -80,7 +74,6 @@ struct dp_altmode {
 	struct work_struct work;
 	struct typec_altmode *alt;
 	const struct typec_altmode *port;
-//	struct fwnode_handle *connector_fwnode;
 };
 
 static int dp_altmode_notify(struct dp_altmode *dp)
@@ -128,9 +121,12 @@ static int dp_altmode_configure(struct dp_altmode *dp, u8 con)
 		else if (pin_assign & DP_PIN_ASSIGN_DP_ONLY_MASK)
 			pin_assign &= DP_PIN_ASSIGN_DP_ONLY_MASK;
 
-		/* if C/D present they have precedence over E/F for USB-C->USB-C */
+		/*
+		 * DFP_U never selects Pin Assignment E when Pin Assignment C
+		 * and possibly Pin Assignment D are offered by the UFP_U.
+		 */
 		if (pin_assign & (BIT(DP_PIN_ASSIGN_C) | BIT(DP_PIN_ASSIGN_D)))
-			pin_assign &= ~(BIT(DP_PIN_ASSIGN_E) | BIT(DP_PIN_ASSIGN_F));
+			pin_assign &= ~BIT(DP_PIN_ASSIGN_E);
 
 		if (!pin_assign)
 			return -EINVAL;
@@ -161,7 +157,6 @@ static int dp_altmode_status_update(struct dp_altmode *dp)
 			dp->state = DP_STATE_CONFIGURE;
 	} else {
 		if (dp->hpd != hpd) {
-//			drm_connector_oob_hotplug_event(dp->connector_fwnode);
 			dp->hpd = hpd;
 		}
 	}
@@ -533,7 +528,6 @@ static const struct attribute_group dp_altmode_group = {
 int dp_altmode_probe(struct typec_altmode *alt)
 {
 	const struct typec_altmode *port = typec_altmode_get_partner(alt);
-//	struct fwnode_handle *fwnode;
 	struct dp_altmode *dp;
 	int ret;
 
@@ -562,11 +556,6 @@ int dp_altmode_probe(struct typec_altmode *alt)
 	alt->desc = "DisplayPort";
 	alt->ops = &dp_altmode_ops;
 
-//	fwnode = dev_fwnode(alt->dev.parent->parent); /* typec_port fwnode */
-//	dp->connector_fwnode = fwnode_find_reference(fwnode, "displayport", 0);
-//	if (IS_ERR(dp->connector_fwnode))
-//		dp->connector_fwnode = NULL;
-
 	typec_altmode_set_drvdata(alt, dp);
 
 	dp->state = DP_STATE_ENTER;
@@ -582,13 +571,6 @@ void dp_altmode_remove(struct typec_altmode *alt)
 
 	sysfs_remove_group(&alt->dev.kobj, &dp_altmode_group);
 	cancel_work_sync(&dp->work);
-
-//	if (dp->connector_fwnode) {
-//		if (dp->hpd)
-//			drm_connector_oob_hotplug_event(dp->connector_fwnode);
-
-//		fwnode_handle_put(dp->connector_fwnode);
-//	}
 }
 EXPORT_SYMBOL_GPL(dp_altmode_remove);
 

@@ -115,8 +115,22 @@ enum {
 
 #define TYPEC_MODAL_STATE(_state_)	((_state_) + TYPEC_STATE_MODAL)
 
+struct typec_altmode *typec_altmode_get_plug(struct typec_altmode *altmode,
+					     enum typec_plug_index index);
+void typec_altmode_put_plug(struct typec_altmode *plug);
+
 struct typec_altmode *typec_match_altmode(struct typec_altmode **altmodes,
 					  size_t n, u16 svid, u8 mode);
+
+/**
+ * typec_altmode_get_orientation - Get cable plug orientation
+ * altmode: Handle to the alternate mode
+ */
+static inline enum typec_orientation
+typec_altmode_get_orientation(struct typec_altmode *altmode)
+{
+	return typec_get_orientation(typec_altmode2port(altmode));
+}
 
 /**
  * typec_altmode_get_svdm_version - Get negotiated SVDM version
@@ -148,26 +162,10 @@ struct typec_altmode_driver {
 #define to_altmode_driver(d) container_of(d, struct typec_altmode_driver, \
 					  driver)
 
-/**
- * typec_altmode_register_driver - registers a USB Type-C alternate mode
- * 				   device driver
- * @drv: pointer to struct typec_altmode_driver
- *
- * These drivers will be bind to the partner alternate mode devices. They will
- * handle all SVID specific communication.
- */
 #define typec_altmode_register_driver(drv) \
 		__typec_altmode_register_driver(drv, THIS_MODULE)
 int __typec_altmode_register_driver(struct typec_altmode_driver *drv,
 				    struct module *module);
-/**
- * typec_altmode_unregister_driver - unregisters a USB Type-C alternate mode
- * 				     device driver
- * @drv: pointer to struct typec_altmode_driver
- *
- * These drivers will be bind to the partner alternate mode devices. They will
- * handle all SVID specific communication.
- */
 void typec_altmode_unregister_driver(struct typec_altmode_driver *drv);
 
 #define module_typec_altmode_driver(__typec_altmode_driver) \

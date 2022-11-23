@@ -6,8 +6,8 @@
 #include <linux/device.h>
 #include <linux/usb/typec.h>
 
-//struct typec_mux;
-//struct typec_switch;
+struct typec_mux;
+struct typec_switch;
 
 struct typec_plug {
 	struct device			dev;
@@ -49,16 +49,11 @@ struct typec_port {
 	struct mutex			port_type_lock;
 
 	enum typec_orientation		orientation;
-	//struct typec_switch		*sw;
-	//struct typec_mux		*mux;
+	struct typec_switch		*sw;
+	struct typec_mux		*mux;
 
 	const struct typec_capability	*cap;
 	const struct typec_operations   *ops;
-
-	struct list_head		port_list;
-	struct mutex			port_list_lock; /* Port list lock */
-
-	void				*pld;
 };
 
 #define to_typec_port(_dev_) container_of(_dev_, struct typec_port, dev)
@@ -76,11 +71,6 @@ extern const struct device_type typec_port_dev_type;
 #define is_typec_plug(dev) ((dev)->type == &typec_plug_dev_type)
 #define is_typec_port(dev) ((dev)->type == &typec_port_dev_type)
 
-//extern struct class typec_mux_class;
-//extern struct class typec_class;
-
-//int typec_link_ports(struct typec_port *connector);
-//void typec_unlink_ports(struct typec_port *connector);
+extern struct class typec_mux_class;
 
 #endif /* __USB_TYPEC_CLASS__ */
-

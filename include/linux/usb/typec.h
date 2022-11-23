@@ -92,6 +92,7 @@ struct enter_usb_data {
  * @id_header: ID Header VDO
  * @cert_stat: Cert Stat VDO
  * @product: Product VDO
+ * @product_type: Product type VDO
  * @vdo: Product Type Specific VDOs
  *
  * USB power delivery Discover Identity command response data.
@@ -103,11 +104,12 @@ struct usb_pd_identity {
 	u32			id_header;
 	u32			cert_stat;
 	u32			product;
+	u32			product_type;
 	u32			vdo[3];
 };
 
 int typec_partner_set_identity(struct typec_partner *partner);
-//int typec_cable_set_identity(struct typec_cable *cable);
+int typec_cable_set_identity(struct typec_cable *cable);
 
 /*
  * struct typec_altmode_desc - USB Type-C Alternate Mode Descriptor
@@ -127,22 +129,22 @@ struct typec_altmode_desc {
 	enum typec_port_data	roles;
 };
 
-//void typec_partner_set_pd_revision(struct typec_partner *partner, u16 pd_revision);
-//int typec_partner_set_num_altmodes(struct typec_partner *partner, int num_altmodes);
+void typec_partner_set_pd_revision(struct typec_partner *partner, u16 pd_revision);
+int typec_partner_set_num_altmodes(struct typec_partner *partner, int num_altmodes);
 struct typec_altmode
 *typec_partner_register_altmode(struct typec_partner *partner,
 				const struct typec_altmode_desc *desc);
-//int typec_plug_set_num_altmodes(struct typec_plug *plug, int num_altmodes);
-//struct typec_altmode
-//*typec_plug_register_altmode(struct typec_plug *plug,
-//			     const struct typec_altmode_desc *desc);
+int typec_plug_set_num_altmodes(struct typec_plug *plug, int num_altmodes);
+struct typec_altmode
+*typec_plug_register_altmode(struct typec_plug *plug,
+			     const struct typec_altmode_desc *desc);
 struct typec_altmode
 *typec_port_register_altmode(struct typec_port *port,
 			     const struct typec_altmode_desc *desc);
 
-//void typec_port_register_altmodes(struct typec_port *port,
-//	const struct typec_altmode_ops *ops, void *drvdata,
-//	struct typec_altmode **altmodes, size_t n);
+void typec_port_register_altmodes(struct typec_port *port,
+	const struct typec_altmode_ops *ops, void *drvdata,
+	struct typec_altmode **altmodes, size_t n);
 
 void typec_unregister_altmode(struct typec_altmode *altmode);
 
@@ -271,29 +273,28 @@ struct typec_partner *typec_register_partner(struct typec_port *port,
 					     struct typec_partner_desc *desc);
 void typec_unregister_partner(struct typec_partner *partner);
 
-//struct typec_cable *typec_register_cable(struct typec_port *port,
-//					 struct typec_cable_desc *desc);
-//void typec_unregister_cable(struct typec_cable *cable);
+struct typec_cable *typec_register_cable(struct typec_port *port,
+					 struct typec_cable_desc *desc);
+void typec_unregister_cable(struct typec_cable *cable);
 
-//struct typec_cable *typec_cable_get(struct typec_port *port);
-//void typec_cable_put(struct typec_cable *cable);
-//int typec_cable_is_active(struct typec_cable *cable);
-
-//struct typec_plug *typec_register_plug(struct typec_cable *cable,
-//				       struct typec_plug_desc *desc);
-//void typec_unregister_plug(struct typec_plug *plug);
+struct typec_plug *typec_register_plug(struct typec_cable *cable,
+				       struct typec_plug_desc *desc);
+void typec_unregister_plug(struct typec_plug *plug);
 
 void typec_set_data_role(struct typec_port *port, enum typec_data_role role);
 void typec_set_pwr_role(struct typec_port *port, enum typec_role role);
-//void typec_set_vconn_role(struct typec_port *port, enum typec_role role);
-//void typec_set_pwr_opmode(struct typec_port *port, enum typec_pwr_opmode mode);
+void typec_set_vconn_role(struct typec_port *port, enum typec_role role);
+void typec_set_pwr_opmode(struct typec_port *port, enum typec_pwr_opmode mode);
 
 int typec_set_orientation(struct typec_port *port,
 			  enum typec_orientation orientation);
 enum typec_orientation typec_get_orientation(struct typec_port *port);
-//int typec_set_mode(struct typec_port *port, int mode);
+int typec_set_mode(struct typec_port *port, int mode);
 
 void *typec_get_drvdata(struct typec_port *port);
+
+int typec_get_fw_cap(struct typec_capability *cap,
+		     struct fwnode_handle *fwnode);
 
 int typec_find_pwr_opmode(const char *name);
 int typec_find_orientation(const char *name);
@@ -304,18 +305,4 @@ int typec_find_port_data_role(const char *name);
 void typec_partner_set_svdm_version(struct typec_partner *partner,
 				    enum usb_pd_svdm_ver svdm_version);
 int typec_get_negotiated_svdm_version(struct typec_port *port);
-
-#if IS_REACHABLE(CONFIG_TYPEC)
-int typec_link_port(struct device *port);
-void typec_unlink_port(struct device *port);
-#else
-static inline int typec_link_port(struct device *port)
-{
-	return 0;
-}
-
-static inline void typec_unlink_port(struct device *port) { }
-#endif
-
 #endif /* __LINUX_USB_TYPEC_H */
-

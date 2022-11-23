@@ -6,12 +6,12 @@
 #include <linux/usb/typec_altmode.h>
 
 struct bus_type;
-//struct typec_mux;
+struct typec_mux;
 
 struct altmode {
 	unsigned int			id;
 	struct typec_altmode		adev;
-//	struct typec_mux		*mux;
+	struct typec_mux		*mux;
 
 	enum typec_port_data		roles;
 

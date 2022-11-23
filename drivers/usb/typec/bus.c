@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/*
+/**
  * Bus for USB Type-C Alternate Modes
  *
  * Copyright (C) 2018 Intel Corporation
@@ -10,22 +10,21 @@
 
 #include "bus.h"
 #include "class.h"
-//#include "mux.h"
+#include "mux.h"
 
 static inline int
 typec_altmode_set_mux(struct altmode *alt, unsigned long conf, void *data)
 {
-	struct altmode *partner;
+	struct typec_mux_state state;
 
-	if (!alt->partner)
-                return -ENODEV;
+	if (!alt->mux)
+		return 0;
 
-        partner = alt->partner;
-	/* Use tcpm set mux */
-	if (partner->adev.ops && partner->adev.ops->notify)
-		return partner->adev.ops->notify(&partner->adev, conf, data);
+	state.alt = &alt->adev;
+	state.mode = conf;
+	state.data = data;
 
-	return 0;
+	return alt->mux->set(alt->mux, &state);
 }
 
 static int typec_altmode_set_state(struct typec_altmode *adev,
@@ -61,6 +60,7 @@ int typec_altmode_notify(struct typec_altmode *adev,
 	bool is_port;
 	struct altmode *altmode;
 	struct altmode *partner;
+	int ret;
 
 	if (!adev)
 		return 0;
@@ -73,7 +73,10 @@ int typec_altmode_notify(struct typec_altmode *adev,
 	is_port = is_typec_port(adev->dev.parent);
 	partner = altmode->partner;
 
-	/* Use tcpm set mux */
+	ret = typec_altmode_set_mux(is_port ? altmode : partner, conf, data);
+	if (ret)
+		return ret;
+
 	if (partner->adev.ops && partner->adev.ops->notify)
 		return partner->adev.ops->notify(&partner->adev, conf, data);
 
@@ -203,6 +206,42 @@ typec_altmode_get_partner(struct typec_altmode *adev)
 	return &to_altmode(adev)->partner->adev;
 }
 EXPORT_SYMBOL_GPL(typec_altmode_get_partner);
+
+/* -------------------------------------------------------------------------- */
+/* API for the alternate mode drivers */
+
+/**
+ * typec_altmode_get_plug - Find cable plug alternate mode
+ * @adev: Handle to partner alternate mode
+ * @index: Cable plug index
+ *
+ * Increment reference count for cable plug alternate mode device. Returns
+ * handle to the cable plug alternate mode, or NULL if none is found.
+ */
+struct typec_altmode *typec_altmode_get_plug(struct typec_altmode *adev,
+					     enum typec_plug_index index)
+{
+	struct altmode *port = to_altmode(adev)->partner;
+
+	if (port->plug[index]) {
+		get_device(&port->plug[index]->adev.dev);
+		return &port->plug[index]->adev;
+	}
+
+	return NULL;
+}
+EXPORT_SYMBOL_GPL(typec_altmode_get_plug);
+
+/**
+ * typec_altmode_put_plug - Decrement cable plug alternate mode reference count
+ * @plug: Handle to the cable plug alternate mode
+ */
+void typec_altmode_put_plug(struct typec_altmode *plug)
+{
+	if (plug)
+		put_device(&plug->dev);
+}
+EXPORT_SYMBOL_GPL(typec_altmode_put_plug);
 
 int __typec_altmode_register_driver(struct typec_altmode_driver *drv,
 				    struct module *module)
