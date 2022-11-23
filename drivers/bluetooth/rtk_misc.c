@@ -158,6 +158,11 @@ uint16_t project_id[] = {
 	ROM_LMP_8852a, /* index 18 for 8852AU */
 	ROM_LMP_8723b, /* index 19 for 8723FU */
 	ROM_LMP_8852a, /* index 20 for 8852BU */
+	ROM_LMP_NONE,
+	ROM_LMP_NONE,
+	ROM_LMP_NONE,
+	ROM_LMP_NONE,
+	ROM_LMP_8852a, /* index 25 for 8852CU */
 };
 
 enum rtk_endpoit {
@@ -177,6 +182,7 @@ enum rtk_endpoit {
 #define RTL8852AU	0x75
 #define RTL8723FU	0x76
 #define RTL8852BU	0x77
+#define RTL8852CU	0x78
 
 typedef struct {
 	uint16_t prod_id;
@@ -385,11 +391,32 @@ static patch_info fw_patch_table[] = {
 	{0xb73a, 0x8723, "mp_rtl8723fu_fw", "rtl8723fu_fw", "rtl8723fu_config", RTL8723FU}, /* RTL8723FU */
 	{0xf72b, 0x8723, "mp_rtl8723fu_fw", "rtl8723fu_fw", "rtl8723fu_config", RTL8723FU}, /* RTL8723FU */
 
+	{0xa85b, 0x8852, "mp_rtl8852bu_fw", "rtl8852bu_fw", "rtl8852bu_config", RTL8852BU}, /* RTL8852BU */
+	{0x8851, 0x8852, "mp_rtl8852bu_fw", "rtl8852bu_fw", "rtl8852bu_config", RTL8852BU}, /* RTL8851AU */
 	{0xb85b, 0x8852, "mp_rtl8852bu_fw", "rtl8852bu_fw", "rtl8852bu_config", RTL8852BU}, /* RTL8852BE */
-	{0x3570, 0x8852, "mp_rtl8852bu_fw", "rtl8852bu_fw", "rtl8852bu_config", RTL8852BU}, /* RTL8852BE */
+	{0xb85c, 0x8852, "mp_rtl8852bu_fw", "rtl8852bu_fw", "rtl8852bu_config", RTL8852BU}, /* RTL8852BE */
 	{0x3571, 0x8852, "mp_rtl8852bu_fw", "rtl8852bu_fw", "rtl8852bu_config", RTL8852BU}, /* RTL8852BE */
 	{0x3570, 0x8852, "mp_rtl8852bu_fw", "rtl8852bu_fw", "rtl8852bu_config", RTL8852BU}, /* RTL8852BE */
-	{0x3571, 0x8852, "mp_rtl8852bu_fw", "rtl8852bu_fw", "rtl8852bu_config", RTL8852BU}, /* RTL8852BE */
+	{0x3572, 0x8852, "mp_rtl8852bu_fw", "rtl8852bu_fw", "rtl8852bu_config", RTL8852BU}, /* RTL8852BE */
+	{0x4b06, 0x8852, "mp_rtl8852bu_fw", "rtl8852bu_fw", "rtl8852bu_config", RTL8852BU}, /* RTL8852BE */
+	{0x885b, 0x8852, "mp_rtl8852bu_fw", "rtl8852bu_fw", "rtl8852bu_config", RTL8852BU}, /* RTL8852BE */
+	{0x886b, 0x8852, "mp_rtl8852bu_fw", "rtl8852bu_fw", "rtl8852bu_config", RTL8852BU}, /* RTL8852BE */
+	{0x887b, 0x8852, "mp_rtl8852bu_fw", "rtl8852bu_fw", "rtl8852bu_config", RTL8852BU}, /* RTL8852BE */
+	{0xc559, 0x8852, "mp_rtl8852bu_fw", "rtl8852bu_fw", "rtl8852bu_config", RTL8852BU}, /* RTL8852BE */
+	{0xb052, 0x8852, "mp_rtl8852bu_fw", "rtl8852bu_fw", "rtl8852bu_config", RTL8852BU}, /* RTL8852BE */
+	{0xb152, 0x8852, "mp_rtl8852bu_fw", "rtl8852bu_fw", "rtl8852bu_config", RTL8852BU}, /* RTL8852BE */
+	{0xb252, 0x8852, "mp_rtl8852bu_fw", "rtl8852bu_fw", "rtl8852bu_config", RTL8852BU}, /* RTL8852BE */
+	{0x4853, 0x8852, "mp_rtl8852bu_fw", "rtl8852bu_fw", "rtl8852bu_config", RTL8852BU}, /* RTL8852BE */
+	{0x1670, 0x8852, "mp_rtl8852bu_fw", "rtl8852bu_fw", "rtl8852bu_config", RTL8852BU}, /* RTL8852BE */
+
+	{0xc85a, 0x8852, "mp_rtl8852cu_fw", "rtl8852cu_fw", "rtl8852cu_config", RTL8852CU}, /* RTL8852CU */
+	{0x0852, 0x8852, "mp_rtl8852cu_fw", "rtl8852cu_fw", "rtl8852cu_config", RTL8852CU}, /* RTL8852CE */
+	{0x5852, 0x8852, "mp_rtl8852cu_fw", "rtl8852cu_fw", "rtl8852cu_config", RTL8852CU}, /* RTL8852CE */
+	{0xc85c, 0x8852, "mp_rtl8852cu_fw", "rtl8852cu_fw", "rtl8852cu_config", RTL8852CU}, /* RTL8852CE */
+	{0x885c, 0x8852, "mp_rtl8852cu_fw", "rtl8852cu_fw", "rtl8852cu_config", RTL8852CU}, /* RTL8852CE */
+	{0x886c, 0x8852, "mp_rtl8852cu_fw", "rtl8852cu_fw", "rtl8852cu_config", RTL8852CU}, /* RTL8852CE */
+	{0x887c, 0x8852, "mp_rtl8852cu_fw", "rtl8852cu_fw", "rtl8852cu_config", RTL8852CU}, /* RTL8852CE */
+	{0x4007, 0x8852, "mp_rtl8852cu_fw", "rtl8852cu_fw", "rtl8852cu_config", RTL8852CU}, /* RTL8852CE */
 
 /* NOTE: must append patch entries above the null entry */
 	{0, 0, NULL, NULL, NULL, 0}
@@ -723,6 +750,7 @@ static inline int get_max_patch_size(u8 chip_type)
 	case RTL8852AU:
 	case RTL8723FU:
 	case RTL8852BU:
+	case RTL8852CU:
 		max_patch_size = 40 * 1024 + 529;
 		break;
 	default:
@@ -1031,6 +1059,7 @@ static int is_mac(u8 chip_type, u16 offset)
 	case RTL8852AU:
 	case RTL8723FU:
 	case RTL8852BU:
+	case RTL8852CU:
 		if (offset == 0x0030)
 			return 1;
 		break;
@@ -1055,6 +1084,7 @@ static uint16_t get_mac_offset(u8 chip_type)
 	case RTL8852AU:
 	case RTL8723FU:
 	case RTL8852BU:
+	case RTL8852CU:
 		return 0x0030;
 	case RTLPREVIOUS:
 		return 0x003c;

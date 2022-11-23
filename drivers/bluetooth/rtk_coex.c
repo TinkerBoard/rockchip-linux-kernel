@@ -2373,6 +2373,37 @@ static void rtl_ev_work(struct work_struct *work)
 	spin_unlock_irqrestore(&coex->buff_lock, flags);
 }
 
+static inline int cmd_cmplt_filter_out(u8 *buf)
+{
+	u16 opcode;
+
+	opcode = buf[3] | (buf[4] << 8);
+	switch (opcode) {
+	case HCI_OP_PERIODIC_INQ:
+	case HCI_OP_READ_LOCAL_VERSION:
+#ifdef RTB_SOFTWARE_MAILBOX
+	case HCI_VENDOR_MAILBOX_CMD:
+#endif
+		return 0;
+	default:
+		return 1;
+	}
+}
+
+static inline int cmd_status_filter_out(u8 *buf)
+{
+	u16 opcode;
+
+	opcode = buf[4] | (buf[5] << 8);
+	switch (opcode) {
+	case HCI_OP_INQUIRY:
+	case HCI_OP_CREATE_CONN:
+		return 0;
+	default:
+		return 1;
+	}
+}
+
 int ev_filter_out(u8 *buf)
 {
 	switch (buf[0]) {
@@ -2382,8 +2413,6 @@ int ev_filter_out(u8 *buf)
 	case HCI_EV_AUTH_COMPLETE:
 	case HCI_EV_LINK_KEY_NOTIFY:
 	case HCI_EV_MODE_CHANGE:
-	case HCI_EV_CMD_COMPLETE:
-	case HCI_EV_CMD_STATUS:
 	case HCI_EV_CONN_COMPLETE:
 	case HCI_EV_SYNC_CONN_COMPLETE:
 	case HCI_EV_DISCONN_COMPLETE:
@@ -2400,6 +2429,10 @@ int ev_filter_out(u8 *buf)
 			return 0;
 		}
 		return 1;
+	case HCI_EV_CMD_COMPLETE:
+		return cmd_cmplt_filter_out(buf);
+	case HCI_EV_CMD_STATUS:
+		return cmd_status_filter_out(buf);
 	default:
 		return 1;
 	}
