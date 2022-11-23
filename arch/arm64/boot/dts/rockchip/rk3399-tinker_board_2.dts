@@ -890,7 +890,7 @@
 
 	rtusb0: rt1711h@4e {
 		status = "okay";
-		compatible = "richtek,rt1711h";
+		compatible = "richtek,rt1715";
 		reg = <0x4e>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&fusb0_int>;
@@ -906,7 +906,12 @@
 			source-pdos = <PDO_FIXED(5000, 500, PDO_FIXED_USB_COMM)>;
 			sink-pdos = <PDO_FIXED(5000, 500, PDO_FIXED_USB_COMM)>;
 			op-sink-microwatt = <1000000>;
-			typec-altmodes = <0xff01 1 0x001c0c00 1>;
+			altmodes {
+				dp {
+					svid = <0xff01>;
+					vdo = <0x001c0c00>;
+				};
+			};
 		};
 	};
 };
