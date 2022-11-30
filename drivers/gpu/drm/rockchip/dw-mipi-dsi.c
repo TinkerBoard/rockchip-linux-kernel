@@ -714,8 +714,10 @@ static unsigned long dw_mipi_dsi_get_lane_rate(struct dw_mipi_dsi *dsi)
 	u64 tmp;
 
 	/* optional override of the desired bandwidth */
-	if (!of_property_read_u32(dev->of_node, "rockchip,lane-rate", &value))
+	if (!of_property_read_u32(dev->of_node, "rockchip,lane-rate", &value)) {
+		printk("dw_mipi_dsi_get_lane_rate lane_rate=%lu(use by dtb)\n", value * USEC_PER_SEC );
 		return value * USEC_PER_SEC;
+	}
 
 	bpp = mipi_dsi_pixel_format_to_bpp(dsi->format);
 	if (bpp < 0)
@@ -1231,6 +1233,7 @@ static void dw_mipi_dsi_pre_enable(struct dw_mipi_dsi *dsi)
 
 extern void sn65dsi84_bridge_enable(struct drm_bridge *bridge);
 extern  bool sn65dsi84_is_connected(void);
+extern bool lt9211_is_connected(void);
 
 static void dw_mipi_dsi_enable(struct dw_mipi_dsi *dsi)
 {
@@ -1754,11 +1757,12 @@ static int dw_mipi_dsi_bind(struct device *dev, struct device *master,
 #if defined(CONFIG_TINKER_MCU)
 	if(!tinker_mcu_is_connected(dsi->id) &&
 		!tinker_mcu_ili9881c_is_connected(dsi->id) &&
-		!sn65dsi84_is_connected()) {
-		pr_info("dsi-%d panel or sn65dsi8x isn't connected\n", dsi->id);
+		!sn65dsi84_is_connected() &&
+		!lt9211_is_connected()) {
+		pr_info("dsi-%d panel or sn65dsi8x and lt9211 isn't connected\n", dsi->id);
 		return 0;
 	} else {
-		pr_info("dsi-%d panel or sn65dsi8x is connected\n", dsi->id);
+		pr_info("dsi-%d panel or sn65dsi8x and lt9211 is connected\n", dsi->id);
 	}
 #endif
 	if (dsi->client) {

@@ -137,6 +137,8 @@ static int ten_thousand = 10000;
 /* this is needed for the proc_doulongvec_minmax of vm_dirty_bytes */
 static unsigned long dirty_bytes_min = 2 * PAGE_SIZE;
 
+extern int display_debug_timing[8];
+
 /* this is needed for the proc_dointvec_minmax for [fs_]overflow UID and GID */
 static int maxolduid = 65535;
 static int minolduid;
@@ -840,6 +842,15 @@ static struct ctl_table kern_table[] = {
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec,
 	},
+/*
+    {
+            .procname       = "display",
+            .data           = &display_debug_timing[0],
+            .maxlen         = 8*sizeof(int),
+            .mode           = 0644,
+            .proc_handler   = proc_dointvec,
+    },
+*/
 #if defined CONFIG_PRINTK
 	{
 		.procname	= "printk",

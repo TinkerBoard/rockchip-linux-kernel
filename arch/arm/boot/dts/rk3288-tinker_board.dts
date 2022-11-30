@@ -254,7 +254,7 @@
 &backlight {
 		status = "disabled";
 		compatible = "pwm-backlight";
-		pwms = <&pwm3 0 400000 0>;//f=2500 t=400,000ns
+		pwms = <&pwm3 0 1000000 0>;
 		brightness-levels = <
 			  0   1   2   3   4   5   6   7
 			  8   9  10  11  12  13  14  15
@@ -405,6 +405,11 @@
 	port@2 {
 			mipi_dsi_out: endpoint3 {
 				remote-endpoint = <&sn65dsi84_in>;
+			};
+	};
+	port@3 {
+			mipi_dsi_to_lvds_out: endpoint {
+				remote-endpoint = <&lt9211_in>;
 			};
 	};
 };
@@ -759,6 +764,61 @@
 
 &i2c3 {
 	status = "okay";
+
+	dsi_lvds_bridge2: lt9211@2d {
+		compatible = "lt9211";
+		status = "disabled";
+		reg = <0x2d>;
+
+		backlight = <&backlight>;
+
+		lvds-clk-rate = <72000000>;
+		lvds-format = <2>;//VESA
+		lvds-bpp = <24>;///RGB888
+		dsi-lanes = <2>;//u-boot
+		sync_delay = <33>;
+		de-mode;
+		//dual-link;
+		//test-pattern;
+
+		t1=<0>;
+		t2=<1>;
+		t3=<500>;
+		t4=<200>;
+		t5=<1>;
+
+		pinctrl-names = "default";
+		pinctrl-0 =  <&pinctrl_sn65dsi84_en &pinctrl_lvds_vdd_en  &pinctrl_pwr_source>;//<&pinctrl_sn65dsi84_irq>
+
+		EN-gpios = <&gpio8 RK_PB0 GPIO_ACTIVE_HIGH>;
+		lvds_vdd_en-gpios = <&gpio8 RK_PA6 GPIO_ACTIVE_HIGH>;
+		//lt9211_irq-gpios = <&gpio8 RK_PA7 GPIO_ACTIVE_HIGH>;
+		pwr_source-gpios = <&gpio8 RK_PA3 GPIO_ACTIVE_HIGH>;
+
+		display-timings {
+			lvds {
+				clock-frequency = <76000000>;
+				hactive = <1366>;
+				vactive = <768>;
+				hfront-porch = <80>;
+				hback-porch = <80>;
+				hsync-len = <34>;
+				vfront-porch = <15>;
+				vsync-len = <8>;
+				vback-porch = <15>;
+				hsync-active = <0>;
+				vsync-active = <0>;
+				de-active = <1>;
+				pixelclk-active = <0>;
+			};
+		};
+
+		port {
+			lt9211_in: endpoint {
+				remote-endpoint = <&mipi_dsi_to_lvds_out>;
+			};
+		};
+	};
 
 	dsi_lvds_bridge: sn65dsi84@2c {
 		compatible = "asus,sn65dsi84";

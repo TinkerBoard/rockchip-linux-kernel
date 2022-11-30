@@ -8,5 +8,6 @@ obj-$(CONFIG_DRM_LONTIUM_LT8912) += lt8912.o
 obj-$(CONFIG_DRM_CHIPONE_ICN6211) += icn6211.o
 
 obj-$(CONFIG_DRM_I2C_SN65DSI84) += sn65dsi8x/
+obj-$(CONFIG_DRM_I2C_LT9211) += lt9211/
 obj-y += analogix/
 obj-y += synopsys/
