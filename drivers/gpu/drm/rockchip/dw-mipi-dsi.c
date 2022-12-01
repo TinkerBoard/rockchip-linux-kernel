@@ -1233,7 +1233,8 @@ static void dw_mipi_dsi_pre_enable(struct dw_mipi_dsi *dsi)
 
 extern void sn65dsi84_bridge_enable(struct drm_bridge *bridge);
 extern  bool sn65dsi84_is_connected(void);
-extern bool lt9211_is_connected(void);
+extern int lt9211_is_connected(void);
+
 
 static void dw_mipi_dsi_enable(struct dw_mipi_dsi *dsi)
 {
@@ -1753,6 +1754,9 @@ static int dw_mipi_dsi_bind(struct device *dev, struct device *master,
 	struct dw_mipi_dsi *dsi = dev_get_drvdata(dev);
 	int ret;
 	static int bind_retry = 0;
+
+	if(lt9211_is_connected() == 2)//let dw_mipi_dsi_bind later than mip2lvdsdriver probe(include sn65dsi84 driver)
+		return -EPROBE_DEFER;
 
 #if defined(CONFIG_TINKER_MCU)
 	if(!tinker_mcu_is_connected(dsi->id) &&

@@ -80,7 +80,7 @@
 #define MULTIPLY_BY_3	(3)
 #define MULTIPLY_BY_4	(4)
 
-static bool switch_to_lvds = true;
+static bool switch_to_lvds = false;
 
 bool hdmi_lvds_switch(void)
 {
