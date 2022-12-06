@@ -1324,6 +1324,8 @@ struct dwc3 {
 	int			max_cfg_eps;
 	int			last_fifo_depth;
 	int			num_ep_resized;
+	struct gpio_desc	*gpio_hub_reset;
+	struct gpio_desc	*gpio_hub_vbus;
 
 	ANDROID_KABI_RESERVE(1);
 	ANDROID_KABI_RESERVE(2);

@@ -25,6 +25,7 @@
 #include <linux/of.h>
 #include <linux/acpi.h>
 #include <linux/pinctrl/consumer.h>
+#include <linux/gpio.h>
 #include <linux/reset.h>
 
 #include <linux/usb/ch9.h>
@@ -1673,6 +1674,26 @@ static int dwc3_probe(struct platform_device *pdev)
 	}
 
 	dwc3_check_params(dwc);
+
+	if (!strcmp(dev_name(dev), "fd000000.dwc3")) {
+		dwc->gpio_hub_reset = devm_gpiod_get_index_optional(dev, "hub-reset", 0, GPIOD_OUT_HIGH);
+		if (IS_ERR(dwc->gpio_hub_reset))
+			dev_err(dev, "Could not get named GPIO for hub-reset-gpios.\n");
+		else {
+			dev_info(dev, "Reset usb hub on boot.\n");
+			gpiod_set_value(dwc->gpio_hub_reset, 0);
+			msleep(1);
+			gpiod_set_value(dwc->gpio_hub_reset, 1);
+		}
+
+		dwc->gpio_hub_vbus = devm_gpiod_get_index_optional(dev, "hub-vbus", 0, GPIOD_OUT_HIGH);
+		if (IS_ERR(dwc->gpio_hub_vbus))
+			dev_err(dev, "Could not get named GPIO for hub-vbus-gpios.\n");
+		else {
+			gpiod_set_value(dwc->gpio_hub_vbus, 1);
+		}
+	}
+
 	dwc3_debugfs_init(dwc);
 
 	ret = dwc3_core_init_mode(dwc);
@@ -1738,6 +1759,9 @@ static int dwc3_remove(struct platform_device *pdev)
 	struct dwc3	*dwc = platform_get_drvdata(pdev);
 
 	pm_runtime_get_sync(&pdev->dev);
+
+	if (dwc->gpio_hub_vbus)
+		gpiod_set_value(dwc->gpio_hub_vbus, 1);
 
 	dwc3_core_exit_mode(dwc);
 	dwc3_debugfs_exit(dwc);
