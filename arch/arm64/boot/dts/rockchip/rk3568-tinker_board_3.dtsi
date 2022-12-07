@@ -144,6 +144,21 @@
 	};
 };
 
+&dsi0_in {
+	dsi0_in_vp2: endpoint@2 {
+		reg = <1>;
+		remote-endpoint = <&vp2_out_dsi0>;
+		status = "disabled";
+	};
+};
+
+&vp2 {
+	vp2_out_dsi0: endpoint@3 {
+		reg = <0>;
+		remote-endpoint = <&dsi0_in_vp2>;
+	};
+};
+
 /*
  * video_phy0 needs to be enabled
  * when dsi0 is enabled
@@ -156,7 +171,7 @@
 	status = "disabled";
 };
 
-&dsi0_in_vp1 {
+&dsi0_in_vp2 {
 	status = "okay";
 };
 
@@ -194,11 +209,11 @@
 };
 
 &edp_in_vp0 {
-	status = "okay";
+	status = "disabled";
 };
 
 &edp_in_vp1 {
-	status = "disabled";
+	status = "okay";
 };
 
 &gmac0 {
@@ -415,16 +430,6 @@
 			remote-endpoint = <&csidphy_out>;
 		};
 	};
-};
-
-&route_dsi0 {
-	status = "okay";
-	connect = <&vp1_out_dsi0>;
-};
-
-&route_edp {
-	status = "okay";
-	connect = <&vp0_out_edp>;
 };
 
 &sata2 {
