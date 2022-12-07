@@ -336,6 +336,8 @@ static int tinker_ft5406_probe(struct i2c_client *client,
 	__set_bit(BTN_TOUCH, input_dev->keybit);
 
 	input_mt_init_slots(input_dev, MAX_TOUCH_POINTS, 0);
+	input_set_abs_params(input_dev, ABS_X, 0, ts_data->screen_width, 0, 0);
+	input_set_abs_params(input_dev, ABS_Y, 0, ts_data->screen_height, 0, 0);
 	input_set_abs_params(input_dev, ABS_MT_POSITION_X, 0, ts_data->screen_width, 0, 0);
 	input_set_abs_params(input_dev, ABS_MT_POSITION_Y, 0, ts_data->screen_height, 0, 0);
 
