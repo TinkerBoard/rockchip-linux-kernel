@@ -355,7 +355,7 @@
 };
 
 &pcie30phy {
-	status = "okay";
+	status = "disabled";
 };
 
 &pcie3x2 {
