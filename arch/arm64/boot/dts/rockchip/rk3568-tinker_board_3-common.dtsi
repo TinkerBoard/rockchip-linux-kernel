@@ -63,7 +63,7 @@
 
 	backlight: backlight {
 		compatible = "pwm-backlight";
-		pwms = <&pwm4 0 25000 0>;
+		pwms = <&pwm3 0 25000 0>;
 		brightness-levels = <
 			  0  20  20  21  21  22  22  23
 			 23  24  24  25  25  26  26  27
@@ -1507,7 +1507,7 @@
 	vccio7-supply = <&vcc_3v3>;
 };
 
-&pwm4 {
+&pwm3 {
 	status = "okay";
 };
 
