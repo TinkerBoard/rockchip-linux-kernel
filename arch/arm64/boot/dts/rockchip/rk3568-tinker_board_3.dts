@@ -123,6 +123,11 @@
                         rockchip,pins = <0 RK_PD3 RK_FUNC_GPIO &pcfg_pull_up>;
                 };
         };
+	typec {
+                pinctrl_typec: pinctrl-typec {
+                        rockchip,pins = <0 RK_PA5 RK_FUNC_GPIO &pcfg_pull_up>;
+                };
+        };
         eeprom {
                 tb3_eeprom: tb3-eeprom {
                         rockchip,pins = <1 RK_PB2 RK_FUNC_GPIO &pcfg_pull_down>;
@@ -143,6 +148,15 @@
                 reg = <0x6f>;
                 status = "okay";
         };
+
+	it5201: tcpc@67 {
+		compatible = "ite,it5201";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_typec>;
+		reg = <0x67>;
+		interrupt-parent = <&gpio0>;
+		interrupts = <RK_PA5 IRQ_TYPE_EDGE_FALLING>;
+	};
 };
 
 &i2c2 {
