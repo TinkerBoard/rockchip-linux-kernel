@@ -287,8 +287,6 @@
 
 	wireless_wlan: wireless-wlan {
 		compatible = "wlan-platdata";
-		rockchip,grf = <&grf>;
-		wifi_chip_type = "ap6398s";
 		status = "okay";
 	};
 

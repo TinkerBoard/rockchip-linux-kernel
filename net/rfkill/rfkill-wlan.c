@@ -552,7 +552,6 @@ static int wlan_platdata_parse_dt(struct device *dev,
 		//return -1;
 	}
 #endif
-
 	ret = of_property_read_string(node, "wifi_chip_type", &strings);
 	if (ret) {
 		LOG("%s: Can not read wifi_chip_type, set default to rkwifi.\n",
@@ -666,6 +665,29 @@ static int wlan_platdata_parse_dt(struct device *dev,
 		 */
 		if (of_machine_is_compatible("rockchip,rk3308"))
 			regmap_write(data->grf, 0x0314, 0x00020002);
+	}
+	gpio = of_get_named_gpio_flags(node, "WIFI,m2e_dis1_n", 0,
+					       &flags);
+	if (gpio_is_valid(gpio)) {
+		data->poweron1.io = gpio;
+		data->poweron1.enable =
+			(flags == GPIO_ACTIVE_HIGH) ? 1 : 0;
+		LOG("%s: WIFI,m2e_dis1_n = %d flags = %d.\n",
+			 __func__, gpio, flags);
+	} else {
+		data->poweron1.io = -1;
+	}
+
+	gpio = of_get_named_gpio_flags(node, "WIFI,m2e_dis2_n", 0,
+					       &flags);
+	if (gpio_is_valid(gpio)) {
+		data->poweron2.io = gpio;
+		data->poweron2.enable =
+			(flags == GPIO_ACTIVE_HIGH) ? 1 : 0;
+		LOG("%s: WIFI,m2e_dis2_n = %d flags = %d.\n",
+			 __func__, gpio, flags);
+	} else {
+		data->poweron2.io = -1;
 	}
 
 	return 0;
@@ -832,7 +854,7 @@ static int rfkill_wlan_probe(struct platform_device *pdev)
 		pdata = kzalloc(sizeof(*pdata), GFP_KERNEL);
 		if (!pdata)
 			return -ENOMEM;
-
+		LOG("Enter %s:%d\n", __func__, __LINE__);
 		ret = wlan_platdata_parse_dt(&pdev->dev, pdata);
 		if (ret < 0) {
 #endif
@@ -873,6 +895,22 @@ static int rfkill_wlan_probe(struct platform_device *pdev)
 	if (gpio_is_valid(pdata->power_n.io) &&
 		gpio_direction_output(pdata->power_n.io, pdata->power_n.enable);
 #endif
+
+	ret = rfkill_rk_setup_gpio(&pdata->poweron1, wlan_name,
+					   "wlan_dis1_n");
+	if (ret)
+		goto fail_alloc;
+
+	ret = rfkill_rk_setup_gpio(&pdata->poweron2, wlan_name,
+					   "wlan_dis2_n");
+	if (ret)
+		goto fail_alloc;
+
+	if (gpio_is_valid(pdata->poweron1.io))
+		gpio_direction_output(pdata->poweron1.io, pdata->poweron1.enable);
+
+	if (gpio_is_valid(pdata->poweron2.io))
+		gpio_direction_output(pdata->poweron2.io, pdata->poweron2.enable);
 
 
 	if (pdata->wifi_power_remain)
