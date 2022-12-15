@@ -46,6 +46,7 @@
 #include "dwmac1000.h"
 #include "dwxgmac2.h"
 #include "hwif.h"
+#include "eth_mac_tinker.h"
 
 /* As long as the interface is active, we keep the timestamping counter enabled
  * with fine resolution and binary rollover. This avoid non-monotonic behavior
@@ -59,6 +60,10 @@
 
 /* Module parameters */
 #define TX_TIMEO	5000
+
+int gmac_num = -1, retry_times = 0;
+bool gmac0_status = false;
+
 static int watchdog = TX_TIMEO;
 module_param(watchdog, int, 0644);
 MODULE_PARM_DESC(watchdog, "Transmit timeout in milliseconds (default 5s)");
@@ -2342,8 +2347,10 @@ static int stmmac_get_hw_features(struct stmmac_priv *priv)
  * it is to verify if the MAC address is valid, in case of failures it
  * generates a random MAC address
  */
-static void stmmac_check_ether_addr(struct stmmac_priv *priv)
+static int stmmac_check_ether_addr(struct stmmac_priv *priv)
 {
+	int ret;
+/*
 	if (!is_valid_ether_addr(priv->dev->dev_addr)) {
 		stmmac_get_umac_addr(priv, priv->hw, priv->dev->dev_addr, 0);
 		if (likely(priv->plat->get_eth_addr))
@@ -2354,6 +2361,17 @@ static void stmmac_check_ether_addr(struct stmmac_priv *priv)
 		dev_info(priv->device, "device MAC address %pM\n",
 			 priv->dev->dev_addr);
 	}
+*/
+	ret = eth_mac_eeprom(priv->dev->dev_addr, gmac_num);
+	if (likely(priv->plat->get_eth_addr))
+		priv->plat->get_eth_addr(priv->plat->bsp_priv,
+			priv->dev->dev_addr);
+	if (!is_valid_ether_addr(priv->dev->dev_addr))
+		eth_hw_addr_random(priv->dev);
+	dev_info(priv->device, "device MAC address %pM\n",
+		priv->dev->dev_addr);
+
+	return ret;
 }
 
 /**
@@ -5042,7 +5060,30 @@ int stmmac_dvr_probe(struct device *device,
 	if (ret)
 		goto error_hw_init;
 
-	stmmac_check_ether_addr(priv);
+	if (!strcmp(dev_name(device), "fe2a0000.ethernet"))
+		gmac_num = 0;
+	else if (!strcmp(dev_name(device), "fe010000.ethernet"))
+		gmac_num = 1;
+	else
+		gmac_num = 0;
+
+	ret = stmmac_check_ether_addr(priv);
+	dev_info(priv->device, "GMAC%d get MAC address: ret = %d\n", gmac_num, ret);
+
+	if ((ret != 0) && (retry_times < 4)) {
+		retry_times++;
+		dev_info(priv->device, "Access EEPROM fail: Retry = %d\n", retry_times);
+		return ret;
+	}
+
+	if (gmac_num == 0)
+		gmac0_status = true;
+
+	if ((gmac_num == 1) && (gmac0_status == false) && (retry_times < 4)) {
+		/* Wait for GMAC0 Ready */
+		retry_times++;
+		return -EPROBE_DEFER;
+	}
 
 	ndev->netdev_ops = &stmmac_netdev_ops;
 
