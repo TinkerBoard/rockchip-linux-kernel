@@ -32,7 +32,13 @@ u32 phl_log_components = COMP_PHL_XMIT |
 			 COMP_PHL_PS |
 			#endif
 			 COMP_PHL_DBG | 0;
-u8 phl_log_level = _PHL_INFO_;
+#ifdef CONFIG_RTW_DEBUG
+#ifdef RTW_LOG_LEVEL
+	uint phl_log_level = (uint)RTW_LOG_LEVEL; /* from Makefile */
+#else
+	uint phl_log_level = _PHL_INFO_;
+#endif
+#endif
 struct dbg_mem_ctx debug_memory_ctx;
 
 void debug_dump_mac_address(u8 *mac_addr)
