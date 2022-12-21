@@ -965,6 +965,11 @@ static int dw_mipi_dsi_get_dsc_info_from_sink(struct dw_mipi_dsi_rockchip *dsi,
 	return 0;
 }
 
+#if defined(CONFIG_DRM_I2C_LT9211)
+extern int lt9211_is_connected(void);
+#else
+static int lt9211_is_connected(void) { return 0; }
+#endif
 static int dw_mipi_dsi_rockchip_bind(struct device *dev,
 				     struct device *master,
 				     void *data)
@@ -973,6 +978,13 @@ static int dw_mipi_dsi_rockchip_bind(struct device *dev,
 	struct drm_device *drm_dev = data;
 	struct device *second;
 	int ret;
+
+    if(!lt9211_is_connected()) {
+            pr_info("dsi-%d panel or lt9211 aren't connected\n", dsi->id);
+            return 0;
+    } else {
+            pr_info("dsi-%d panel or lt9211 is connected\n", dsi->id);
+    }
 
 	second = dw_mipi_dsi_rockchip_find_second(dsi);
 	if (IS_ERR(second))

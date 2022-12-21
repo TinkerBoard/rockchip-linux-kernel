@@ -307,4 +307,6 @@ source "drivers/gpu/drm/bridge/cadence/Kconfig"
 
 source "drivers/gpu/drm/bridge/synopsys/Kconfig"
 
+source "drivers/gpu/drm/bridge/lt9211/Kconfig"
+
 endmenu
