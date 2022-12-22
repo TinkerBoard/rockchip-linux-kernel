@@ -55,7 +55,7 @@
 		vin-supply = <&vcc3v3_sys>;
 	};
 
-	vcc3v3_pcie: gpio-regulator {
+	vcc3v3_pcie: pcie3-gpio-regulator {
 		compatible = "regulator-fixed";
 		regulator-name = "vcc3v3_pcie";
 		regulator-min-microvolt = <3300000>;
@@ -66,7 +66,7 @@
 		vin-supply = <&dc_12v>;
 	};
 
-	vcc3v3_pcie2: gpio-regulator {
+	vcc3v3_pcie2: pcie2-gpio-regulator {
 		compatible = "regulator-fixed";
 		regulator-name = "vcc3v3_pcie2";
 		regulator-min-microvolt = <3300000>;
@@ -76,6 +76,14 @@
 		startup-delay-us = <5000>;
 		vin-supply = <&dc_12v>;
 	};
+
+        clkgen_pcie3: clkcgen-pcie3 {
+                compatible = "regulator-fixed";
+                regulator-name = "clkgen_pcie3";
+                gpio = <&gpio4 RK_PB4 GPIO_ACTIVE_LOW>;
+		regulator-boot-on;
+		regulator-always-on;
+        };
 
 	vcc3v3_bu: vcc3v3-bu {
 		compatible = "regulator-fixed";
@@ -300,7 +308,7 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&cif_clk>;
 		reset-gpios = <&gpio3 RK_PB6 GPIO_ACTIVE_LOW>;
-		pwdn-gpios = <&gpio4 RK_PB4 GPIO_ACTIVE_LOW>;
+		//pwdn-gpios = <&gpio4 RK_PB4 GPIO_ACTIVE_LOW>;
 		rockchip,grf = <&grf>;
 		rockchip,camera-module-index = <0>;
 		rockchip,camera-module-facing = "back";
@@ -322,7 +330,7 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&cif_clk>;
 		reset-gpios = <&gpio3 RK_PB6 GPIO_ACTIVE_LOW>;
-		pwdn-gpios = <&gpio4 RK_PB4 GPIO_ACTIVE_HIGH>;
+		//pwdn-gpios = <&gpio4 RK_PB4 GPIO_ACTIVE_HIGH>;
 		rockchip,camera-module-index = <0>;
 		rockchip,camera-module-facing = "back";
 		rockchip,camera-module-name = "CMK-OT1607-FV1";
@@ -344,7 +352,7 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&cif_clk>;
 		reset-gpios = <&gpio3 RK_PB6 GPIO_ACTIVE_HIGH>;
-		pwdn-gpios = <&gpio4 RK_PB4 GPIO_ACTIVE_HIGH>;
+		//pwdn-gpios = <&gpio4 RK_PB4 GPIO_ACTIVE_HIGH>;
 		rockchip,camera-module-index = <0>;
 		rockchip,camera-module-facing = "back";
 		rockchip,camera-module-name = "TongJu";
@@ -386,7 +394,7 @@
 	status = "okay";
 };
 &pcie30phy {
-	status = "disabled";
+	status = "okay";
 };
 
 &pcie3x2 {

@@ -194,6 +194,11 @@ struct rk_pcie_of_data {
 
 #define to_rk_pcie(x)	dev_get_drvdata((x)->dev)
 
+#ifdef CONFIG_BOARDINFO
+extern int get_prjid(void);
+extern int get_odmid(void);
+#endif
+
 static int rk_pcie_read(void __iomem *addr, int size, u32 *val)
 {
 	if ((uintptr_t)addr & (size - 1)) {
@@ -2144,6 +2149,24 @@ release_driver:
 
 static int rk_pcie_probe(struct platform_device *pdev)
 {
+        #ifdef CONFIG_BOARDINFO
+
+	struct device		*dev = &pdev->dev;
+
+	pr_info("rk_pcie_probe: dev_name=%s\n",dev_name(dev));
+        if (!strcmp(dev_name(dev), "3c0800000.pcie")) {
+                pr_info("rk_pcie_probe get_prjid=%d,get_odmid=%d", get_prjid(), get_odmid());
+                // Disable when Tinker3 SKU3 and pcie3x2 
+                if (get_prjid() == -1 && get_odmid() == -1) {
+                        pr_info("Get the project id and ODM id fail\n");
+                        return -EPROBE_DEFER;
+                } else if (get_prjid() == 12 && get_odmid() == 18) {
+                        pr_info("No b key sku return pcie3x2\n");
+                        return -ENODEV;
+                }
+        }
+        #endif
+
 	if (IS_ENABLED(CONFIG_PCIE_RK_THREADED_INIT)) {
 		struct task_struct *tsk;
 
