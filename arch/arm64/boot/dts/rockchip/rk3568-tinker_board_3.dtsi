@@ -120,11 +120,11 @@
 };
 
 &csi2_dphy_hw {
-	status = "okay";
+	status = "disabled";
 };
 
 &csi2_dphy0 {
-	status = "okay";
+	status = "disabled";
 
 	ports {
 		#address-cells = <1>;
@@ -440,15 +440,15 @@
 };
 
 &rkisp {
-	status = "okay";
+	status = "disabled";
 };
 
 &rkisp_mmu {
-	status = "okay";
+	status = "disabled";
 };
 
 &rkisp_vir0 {
-	status = "okay";
+	status = "disabled";
 
 	port {
 		#address-cells = <1>;
