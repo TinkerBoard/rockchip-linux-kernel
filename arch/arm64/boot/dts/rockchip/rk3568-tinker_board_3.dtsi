@@ -125,8 +125,8 @@
 		bpc = <8>;
 		backlight = <&backlight>;
 		pinctrl-names = "default";
-		pinctrl-0 =  <&pinctrl_vdd_en>;
-
+		pinctrl-0 =  <&pinctrl_vdd_en &pinctrl_bl_sys_en>;
+		bl_sys_en-gpios = <&gpio1 RK_PA4 GPIO_ACTIVE_HIGH>;
 		enable-gpios = <&gpio1 RK_PB0 GPIO_ACTIVE_HIGH>;
 		disable-delay-ms = <500>; //power off time t12 500ms
 

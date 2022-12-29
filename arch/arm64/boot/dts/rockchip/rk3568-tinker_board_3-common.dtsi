@@ -74,9 +74,8 @@
 		pwm-off-delay-ms = <15>;//EDP T16,min 10ms, Backlight node:pwm-off-delay-ms = <15>;
 		disable_delay = <15>;//EDP T17,min 10
 		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_bl_en &pinctrl_bl_sys_en>;
+		pinctrl-0 = <&pinctrl_bl_en>;
 		soc_enablekl-gpios = <&gpio3 RK_PA3 GPIO_ACTIVE_HIGH>;
-		bl_sys_en-gpios = <&gpio1 RK_PA4 GPIO_ACTIVE_HIGH>;
 	};
 
 	backlight1: backlight1 {

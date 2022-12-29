@@ -32,11 +32,9 @@ struct pwm_bl_data {
 	struct regulator	*power_supply;
 	struct gpio_desc	*enable_gpio;
 	struct gpio_desc	*soc_enablekl;
-	struct gpio_desc	*bl_sys_en_gpio;
 	bool power_sequence_reverse;
 	unsigned int		scale;
 	bool			legacy;
-	bool			edp_panel_flag;
 	unsigned int		post_pwm_on_delay;
 	unsigned int		pwm_off_delay;
 	int			(*notify)(struct device *,
@@ -59,10 +57,6 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb)
 	err = regulator_enable(pb->power_supply);
 	if (err < 0)
 		dev_err(pb->dev, "failed to enable power supply\n");
-
-	if(pb->edp_panel_flag && pb->bl_sys_en_gpio) {
-		gpiod_set_value_cansleep(pb->bl_sys_en_gpio, 1);
-	}
 
 	if (!pb->power_sequence_reverse) {
 		if (pb->soc_enablekl)
@@ -121,10 +115,6 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
 
 		if (pb->soc_enablekl)
 			gpiod_set_value_cansleep(pb->soc_enablekl, 0);
-	}
-
-	if(pb->edp_panel_flag && pb->bl_sys_en_gpio) {
-		gpiod_set_value_cansleep(pb->bl_sys_en_gpio, 0);
 	}
 
 	if (pb->enable_gpio)
@@ -526,7 +516,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
 	struct pwm_state state;
 	unsigned int i;
 	int ret;
-	const char* panel_type;
 
 	if (!data) {
 		ret = pwm_backlight_parse_dt(&pdev->dev, &defdata);
@@ -580,30 +569,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
 	if (IS_ERR(pb->soc_enablekl)) {
 		ret = PTR_ERR(pb->soc_enablekl);
 		goto err_alloc;
-	}
-
-	if(!of_property_read_string(node, "panel-type", &panel_type)) {
-		if(!strcmp(panel_type, "eDP")) {
-			pb->edp_panel_flag = 1;
-		}
-		else {
-		pb->edp_panel_flag = 0;
-		}
-	}
-	else {
-		pb->edp_panel_flag = 0;
-	}
-
-	if(pb->edp_panel_flag) {
-		if(of_property_read_bool(node, "uboot-logo")) {
-			pb->bl_sys_en_gpio = devm_gpiod_get_optional(&pdev->dev, "bl_sys_en",GPIOD_OUT_HIGH);
-		} else {
-			pb->bl_sys_en_gpio = devm_gpiod_get_optional(&pdev->dev, "bl_sys_en",GPIOD_OUT_HIGH);
-		}
-		if (IS_ERR(pb->bl_sys_en_gpio)) {
-			ret = PTR_ERR(pb->bl_sys_en_gpio);
-			goto err_alloc;
-		}
 	}
 
 	pb->power_supply = devm_regulator_get(&pdev->dev, "power");
