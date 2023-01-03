@@ -1378,7 +1378,7 @@
 };
 
 &route_edp {
-	status = "okay";
+	status = "disabled";
 	connect = <&vp1_out_edp>;
 };
 
