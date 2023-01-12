@@ -1164,10 +1164,10 @@ static const struct usb_device_id option_ids[] = {
 	  .driver_info = RSVD(4) },
 	{ USB_DEVICE(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_AG15),
 	  .driver_info = RSVD(4) },
-	{ USB_DEVICE(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_AG520R),
-	  .driver_info = RSVD(4) },
-	{ USB_DEVICE(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_AG550R),
-	  .driver_info = RSVD(4) },
+	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_AG520R, 0xff, 0xff, 0x30) },
+	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_AG520R, 0xff, 0, 0) },
+	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_AG550R, 0xff, 0xff, 0x30) },
+	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_AG550R, 0xff, 0, 0) },
 
 	{ USB_DEVICE(CMOTECH_VENDOR_ID, CMOTECH_PRODUCT_6001) },
 	{ USB_DEVICE(CMOTECH_VENDOR_ID, CMOTECH_PRODUCT_CMU_300) },
@@ -2209,10 +2209,7 @@ static int option_probe(struct usb_serial *serial,
 {
 	struct usb_interface_descriptor *iface_desc =
 				&serial->interface->cur_altsetting->desc;
-	struct usb_device_descriptor *dev_desc = &serial->dev->descriptor;
 	unsigned long device_flags = id->driver_info;
-	u16 id_vendor = le16_to_cpu(dev_desc->idVendor);
-       	u16 id_product = le16_to_cpu(dev_desc->idProduct);
 
 	/* Never bind to the CD-Rom emulation interface	*/
 	if (iface_desc->bInterfaceClass == USB_CLASS_MASS_STORAGE)
@@ -2234,35 +2231,6 @@ static int option_probe(struct usb_serial *serial,
 		return -ENODEV;
 
 	/* Store the device flags so we can use them during attach. */
-
-	//Quectel UC20's interface 4 can be used as USB network device
-	if (id_vendor == QUALCOMM_VENDOR_ID &&
-	    id_product == QUECTEL_PRODUCT_UC20 &&
-	    iface_desc->bInterfaceNumber >= 4)
-		return -ENODEV;
-
-	//Quectel EC20's interface 4 can be used as USB network device
-	if (id_vendor == QUALCOMM_VENDOR_ID &&
-	    id_product == QUECTEL_PRODUCT_EC20 &&
-	    iface_desc->bInterfaceNumber >= 4)
-		return -ENODEV;
-
-	if (id_vendor == QUECTEL_VENDOR_ID) {
-		if (iface_desc->bInterfaceClass != 0xFF ||
-		    iface_desc->bInterfaceSubClass == 0x42) {
-			//ECM, RNDIS, NCM, MBIM, ACM, UAC, ADB
-			return -ENODEV;
-		}
-		if ((id_product & 0xF000) == 0) {
-			//MDM interface 4 is QMI
-			if (iface_desc->bInterfaceNumber == 4 &&
-			    iface_desc->bNumEndpoints == 3 &&
-			    iface_desc->bInterfaceSubClass == 0xFF &&
-			    iface_desc->bInterfaceProtocol == 0xFF)
-				return -ENODEV;
-		}
-	}
-
 	usb_set_serial_data(serial, (void *)device_flags);
 
 	return 0;

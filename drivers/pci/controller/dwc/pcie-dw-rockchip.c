@@ -165,6 +165,7 @@ struct rk_pcie {
 	struct reset_control		*rsts;
 	unsigned int			clk_cnt;
 	struct gpio_desc		*rst_gpio;
+	struct gpio_desc		*pwr_gpio;
 	u32				perst_inactive_ms;
 	struct gpio_desc		*prsnt_gpio;
 	phys_addr_t			mem_start;
@@ -767,6 +768,7 @@ static int rk_pcie_establish_link(struct dw_pcie *pci)
 
 	/* Rest the device */
 	gpiod_set_value_cansleep(rk_pcie->rst_gpio, 0);
+	gpiod_set_value_cansleep(rk_pcie->pwr_gpio, 0);
 
 	rk_pcie_disable_ltssm(rk_pcie);
 	rk_pcie_link_status_clear(rk_pcie);
@@ -792,7 +794,6 @@ static int rk_pcie_establish_link(struct dw_pcie *pci)
 			return 0;
 		}
 	}
-
 	/*
 	 * PCIe requires the refclk to be stable for 100µs prior to releasing
 	 * PERST and T_PVPERL (Power stable to PERST# inactive) should be a
@@ -801,8 +802,10 @@ static int rk_pcie_establish_link(struct dw_pcie *pci)
 	 * requuirement here. We add a 200ms by default for sake of hoping everthings
 	 * work fine. If it doesn't, please add more in DT node by add rockchip,perst-inactive-ms.
 	 */
+	dev_info(pci->dev, "power on!");
 	msleep(rk_pcie->perst_inactive_ms);
 	gpiod_set_value_cansleep(rk_pcie->rst_gpio, 1);
+	gpiod_set_value_cansleep(rk_pcie->pwr_gpio, 1);
 
 	/*
 	 * Add this 1ms delay because we observe link is always up stably after it and
@@ -1263,6 +1266,13 @@ static int rk_pcie_resource_get(struct platform_device *pdev,
 		dev_err(&pdev->dev, "invalid reset-gpios property in node\n");
 		return PTR_ERR(rk_pcie->rst_gpio);
 	}
+
+	rk_pcie->pwr_gpio = devm_gpiod_get_optional(&pdev->dev, "m2b-pwr-off",
+                                                    GPIOD_OUT_HIGH);
+	if (IS_ERR(rk_pcie->pwr_gpio)) {
+                dev_err(&pdev->dev, "invalid m2b-pwr-off-gpios property in node\n");
+                return PTR_ERR(rk_pcie->pwr_gpio);
+        }
 
 	if (device_property_read_u32(&pdev->dev, "rockchip,perst-inactive-ms",
 				     &rk_pcie->perst_inactive_ms))
@@ -2332,6 +2342,7 @@ no_l2:
 	gpiod_set_value_cansleep(rk_pcie->rst_gpio, 0);
 	ret = rk_pcie_disable_power(rk_pcie);
 
+	dev_info(dev, "suspend!");
 	return ret;
 }
 
