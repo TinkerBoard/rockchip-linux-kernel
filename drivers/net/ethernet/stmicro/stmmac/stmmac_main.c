@@ -1047,6 +1047,9 @@ static int stmmac_init_phy(struct net_device *dev)
 	priv->speed = SPEED_UNKNOWN;
 	priv->oldduplex = DUPLEX_UNKNOWN;
 
+	if (priv->plat->integrated_phy_power)
+		priv->plat->integrated_phy_power(priv->plat->bsp_priv, true);
+
 	if (priv->plat->phy_node) {
 		phydev = of_phy_connect(dev, priv->plat->phy_node,
 					&stmmac_adjust_link, 0, interface);
@@ -2883,6 +2886,9 @@ static int stmmac_release(struct net_device *dev)
 	if (dev->phydev) {
 		phy_stop(dev->phydev);
 		phy_disconnect(dev->phydev);
+		if (priv->plat->integrated_phy_power)
+			priv->plat->integrated_phy_power(priv->plat->bsp_priv,
+							 false);
 	}
 
 	stmmac_disable_all_queues(priv);
@@ -4840,6 +4846,9 @@ int stmmac_suspend(struct device *dev)
 			set_rtl8211f_wol_enable(phydev);
 		}
 	} else {
+		if (priv->plat->integrated_phy_power)
+			priv->plat->integrated_phy_power(priv->plat->bsp_priv,
+							 false);
 		stmmac_mac_set(priv, priv->ioaddr, false);
 		pinctrl_pm_select_sleep_state(priv->device);
 		/* Disable clock in case of PWM is off */
@@ -4931,6 +4940,9 @@ int stmmac_resume(struct device *dev)
 		/* reset the phy so that it's ready */
 		if (priv->mii)
 			stmmac_mdio_reset(priv->mii);
+		if (priv->plat->integrated_phy_power)
+			priv->plat->integrated_phy_power(priv->plat->bsp_priv,
+							 true);
 	}
 
 	mutex_lock(&priv->lock);
