@@ -280,9 +280,7 @@ int rtw_dev_get_feature_set(struct net_device *dev)
 
 #ifdef CONFIG_RTW_WIFI_HAL
 	feature_set |= WIFI_FEATURE_CONFIG_NDO;
-#ifdef CONFIG_RTW_CFGVENDOR_RANDOM_MAC_OUI
 	feature_set |= WIFI_FEATURE_SCAN_RAND;
-#endif
 #endif
 
 	return feature_set;

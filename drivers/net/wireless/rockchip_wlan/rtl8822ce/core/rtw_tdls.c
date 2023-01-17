@@ -930,7 +930,6 @@ u8 *rtw_tdls_set_ch_sw(u8 *pframe, struct pkt_attrib *pattrib, struct sta_info *
 void rtw_tdls_set_ch_sw_oper_control(_adapter *padapter, u8 enable)
 {
 	HAL_DATA_TYPE *pHalData = GET_HAL_DATA(padapter);
-	u8 bcn_early_case;
 
 	if (enable == _TRUE) {
 #ifdef CONFIG_TDLS_CH_SW_V2
@@ -940,18 +939,14 @@ void rtw_tdls_set_ch_sw_oper_control(_adapter *padapter, u8 enable)
 #ifdef CONFIG_TDLS_CH_SW_BY_DRV
 		pHalData->ch_switch_offload = _FALSE;
 #endif
-		bcn_early_case = TDLS_BCN_ERLY_ON;
 	}
-	else {
+	else
 		pHalData->ch_switch_offload = _FALSE;
-		bcn_early_case = TDLS_BCN_ERLY_OFF;
-	}
-
+	
 	if (ATOMIC_READ(&padapter->tdlsinfo.chsw_info.chsw_on) != enable)
 		ATOMIC_SET(&padapter->tdlsinfo.chsw_info.chsw_on, enable);
 
-	rtw_hal_set_hwreg(padapter, HW_VAR_BCN_EARLY_C2H_RPT, &enable);
-	rtw_hal_set_hwreg(padapter, HW_VAR_SET_DRV_ERLY_INT, &bcn_early_case);
+	rtw_hal_set_hwreg(padapter, HW_VAR_TDLS_BCN_EARLY_C2H_RPT, &enable);
 	RTW_INFO("[TDLS] %s Bcn Early C2H Report\n", (enable == _TRUE) ? "Start" : "Stop");
 }
 
@@ -1918,15 +1913,13 @@ sint On_TDLS_Setup_Req(_adapter *padapter, union recv_frame *precv_frame, struct
 
 			switch (pIE->ElementID) {
 			case _SUPPORTEDRATES_IE_:
-				if (pIE->Length <= sizeof(supportRate)) {
-					_rtw_memcpy(supportRate, pIE->data, pIE->Length);
-					supportRateNum = pIE->Length;
-				}
+				_rtw_memcpy(supportRate, pIE->data, pIE->Length);
+				supportRateNum = pIE->Length;
 				break;
 			case _COUNTRY_IE_:
 				break;
 			case _EXT_SUPPORTEDRATES_IE_:
-				if ((supportRateNum + pIE->Length) <= sizeof(supportRate)) {
+				if (supportRateNum < sizeof(supportRate)) {
 					_rtw_memcpy(supportRate + supportRateNum, pIE->data, pIE->Length);
 					supportRateNum += pIE->Length;
 				}
@@ -1937,19 +1930,17 @@ sint On_TDLS_Setup_Req(_adapter *padapter, union recv_frame *precv_frame, struct
 				rsnie_included = 1;
 				if (prx_pkt_attrib->encrypt) {
 					prsnie = (u8 *)pIE;
-					if (pIE->Length <= sizeof(ptdls_sta->TDLS_RSNIE)) {
-						/* Check CCMP pairwise_cipher presence. */
-						ppairwise_cipher = prsnie + 10;
-						_rtw_memcpy(ptdls_sta->TDLS_RSNIE, pIE->data, pIE->Length);
-						pairwise_count = *(u16 *)(ppairwise_cipher - 2);
-						for (k = 0; k < pairwise_count; k++) {
-							if (_rtw_memcmp(ppairwise_cipher + 4 * k, RSN_CIPHER_SUITE_CCMP, 4) == _TRUE)
-								ccmp_included = 1;
-						}
-
-						if (ccmp_included == 0)
-							txmgmt.status_code = _STATS_INVALID_RSNIE_;
+					/* Check CCMP pairwise_cipher presence. */
+					ppairwise_cipher = prsnie + 10;
+					_rtw_memcpy(ptdls_sta->TDLS_RSNIE, pIE->data, pIE->Length);
+					pairwise_count = *(u16 *)(ppairwise_cipher - 2);
+					for (k = 0; k < pairwise_count; k++) {
+						if (_rtw_memcmp(ppairwise_cipher + 4 * k, RSN_CIPHER_SUITE_CCMP, 4) == _TRUE)
+							ccmp_included = 1;
 					}
+
+					if (ccmp_included == 0)
+						txmgmt.status_code = _STATS_INVALID_RSNIE_;
 				}
 				break;
 			case _EXT_CAP_IE_:
@@ -2104,15 +2095,13 @@ int On_TDLS_Setup_Rsp(_adapter *padapter, union recv_frame *precv_frame, struct 
 
 		switch (pIE->ElementID) {
 		case _SUPPORTEDRATES_IE_:
-			if (pIE->Length <= sizeof(supportRate)) {
-				_rtw_memcpy(supportRate, pIE->data, pIE->Length);
-				supportRateNum = pIE->Length;
-			}
+			_rtw_memcpy(supportRate, pIE->data, pIE->Length);
+			supportRateNum = pIE->Length;
 			break;
 		case _COUNTRY_IE_:
 			break;
 		case _EXT_SUPPORTEDRATES_IE_:
-			if ((supportRateNum + pIE->Length) <= sizeof(supportRate)) {
+			if (supportRateNum < sizeof(supportRate)) {
 				_rtw_memcpy(supportRate + supportRateNum, pIE->data, pIE->Length);
 				supportRateNum += pIE->Length;
 			}

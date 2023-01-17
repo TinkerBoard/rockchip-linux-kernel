@@ -96,10 +96,6 @@
 #ifdef CONFIG_IOCTL_CFG80211
 	/*	#include <linux/ieee80211.h> */
 	#include <net/cfg80211.h>
-#else
-	#ifdef CONFIG_REGD_SRC_FROM_OS
-	#error "CONFIG_REGD_SRC_FROM_OS requires CONFIG_IOCTL_CFG80211"
-	#endif
 #endif /* CONFIG_IOCTL_CFG80211 */
 
 
@@ -221,7 +217,6 @@ typedef void *timer_hdl_context;
 #endif
 
 typedef unsigned long systime;
-typedef ktime_t sysptime;
 typedef struct tasklet_struct _tasklet;
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 22))
@@ -390,11 +385,6 @@ __inline static void _cancel_timer(_timer *ptimer, u8 *bcancelled)
 	*bcancelled = del_timer_sync(&ptimer->timer) == 1 ? 1 : 0;
 }
 
-__inline static void _cancel_timer_async(_timer *ptimer)
-{
-	del_timer(&ptimer->timer);
-}
-
 static inline void _init_workitem(_workitem *pwork, void *pfunc, void *cntx)
 {
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 20))
@@ -560,8 +550,5 @@ extern struct net_device *rtw_alloc_etherdev(int sizeof_priv);
 
 #define STRUCT_PACKED __attribute__ ((packed))
 
-#ifndef fallthrough
-#define fallthrough do {} while (0)
-#endif
 
 #endif /* __OSDEP_LINUX_SERVICE_H_ */

@@ -300,17 +300,12 @@ enum {
 #ifdef CONFIG_WOWLAN
 	MP_WOW_ENABLE,
 	MP_WOW_SET_PATTERN,
-#ifdef CONFIG_WOW_KEEP_ALIVE_PATTERN
-	MP_WOW_SET_KEEP_ALIVE_PATTERN,
-#endif /*CONFIG_WOW_KEEP_ALIVE_PATTERN*/
-
 #endif
 #ifdef CONFIG_AP_WOWLAN
 	MP_AP_WOW_ENABLE,
 #endif
 	MP_SD_IREAD,
 	MP_SD_IWRITE,
-	GET_IC_TYPE,
 };
 
 struct mp_priv {
@@ -393,7 +388,6 @@ struct mp_priv {
 	BOOLEAN mplink_btx;
 
 	bool tssitrk_on;
-	bool efuse_update_on;
 	bool efuse_update_file;
 	char efuse_file_path[128];
 };
@@ -426,8 +420,7 @@ typedef struct _MP_FIRMWARE {
 } RT_MP_FIRMWARE, *PRT_MP_FIRMWARE;
 
 
-#define GET_MPPRIV(__padapter) (struct mp_priv*)(&(((struct _ADAPTER*)__padapter)->mppriv))
-#define GET_EFUSE_UPDATE_ON(_padapter)	(GET_MPPRIV(_padapter)->efuse_update_on)
+
 
 /* *********************************************************************** */
 
@@ -504,7 +497,7 @@ extern u8 mpdatarate[NumRates];
 /* MP set force data rate base on the definition. */
 typedef enum _MPT_RATE_INDEX {
 	/* CCK rate. */
-	MPT_RATE_1M = 1 ,	/* 0 */
+	MPT_RATE_1M = 0 ,	/* 0 */
 	MPT_RATE_2M,
 	MPT_RATE_55M,
 	MPT_RATE_11M,	/* 3 */
@@ -737,7 +730,7 @@ void hal_mpt_SetContinuousTx(PADAPTER pAdapter, u8 bStart);
 void hal_mpt_SetSingleCarrierTx(PADAPTER pAdapter, u8 bStart);
 void hal_mpt_SetSingleToneTx(PADAPTER pAdapter, u8 bStart);
 void hal_mpt_SetCarrierSuppressionTx(PADAPTER pAdapter, u8 bStart);
-u8 mpt_ProSetPMacTx(PADAPTER	Adapter);
+void mpt_ProSetPMacTx(PADAPTER	Adapter);
 void MP_PHY_SetRFPathSwitch(PADAPTER pAdapter , BOOLEAN bMain);
 void mp_phy_switch_rf_path_set(PADAPTER pAdapter , u8 *pstate);
 u8 MP_PHY_QueryRFPathSwitch(PADAPTER pAdapter);
@@ -911,11 +904,9 @@ int rtw_bt_efuse_mask_file(struct net_device *dev,
 int rtw_efuse_file_map(struct net_device *dev,
 		struct iw_request_info *info,
 		union iwreq_data *wrqu, char *extra);
-#if !defined(CONFIG_RTW_ANDROID_GKI)
 int rtw_efuse_file_map_store(struct net_device *dev,
 		struct iw_request_info *info,
 		union iwreq_data *wrqu, char *extra);
-#endif /* !defined(CONFIG_RTW_ANDROID_GKI) */
 int rtw_bt_efuse_file_map(struct net_device *dev,
 		struct iw_request_info *info,
 		union iwreq_data *wrqu, char *extra);

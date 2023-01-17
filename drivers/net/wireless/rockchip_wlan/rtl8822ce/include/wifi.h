@@ -64,10 +64,6 @@
 #endif
 #endif
 
-#ifdef CONFIG_WOW_KEEP_ALIVE_PATTERN
-#define WLAN_MAX_KEEP_ALIVE_IE_LEN 256
-#endif/*CONFIG_WOW_KEEP_ALIVE_PATTERN*/
-
 #define P80211CAPTURE_VERSION	0x80211001
 
 /* This value is tested by WiFi 11n Test Plan 5.2.3.
@@ -304,7 +300,7 @@ enum WIFI_REG_DOMAIN {
 		*(unsigned short *)(pbuf) &= (~cpu_to_le16(_FROM_DS_)); \
 	} while (0)
 
-#define get_tofr_ds(pframe)	((GetFrDs(pframe) << 1) | GetToDs(pframe))
+#define get_tofr_ds(pframe)	((GetToDs(pframe) << 1) | GetFrDs(pframe))
 
 
 #define SetMFrag(pbuf)	\
@@ -480,17 +476,17 @@ __inline static unsigned char *get_ta(unsigned char *pframe)
 __inline static unsigned char *get_da(unsigned char *pframe)
 {
 	unsigned char	*da;
-	unsigned int	to_fr_ds	= (GetFrDs(pframe) << 1) | GetToDs(pframe);
+	unsigned int	to_fr_ds	= (GetToDs(pframe) << 1) | GetFrDs(pframe);
 
 	switch (to_fr_ds) {
 	case 0x00:	/* ToDs=0, FromDs=0 */
 		da = GetAddr1Ptr(pframe);
 		break;
-	case 0x01:	/* ToDs=1, FromDs=0 */
-		da = GetAddr3Ptr(pframe);
-		break;
-	case 0x02:	/* ToDs=0, FromDs=1 */
+	case 0x01:	/* ToDs=0, FromDs=1 */
 		da = GetAddr1Ptr(pframe);
+		break;
+	case 0x02:	/* ToDs=1, FromDs=0 */
+		da = GetAddr3Ptr(pframe);
 		break;
 	default:	/* ToDs=1, FromDs=1 */
 		da = GetAddr3Ptr(pframe);
@@ -504,17 +500,17 @@ __inline static unsigned char *get_da(unsigned char *pframe)
 __inline static unsigned char *get_sa(unsigned char *pframe)
 {
 	unsigned char	*sa;
-	unsigned int	to_fr_ds	= (GetFrDs(pframe) << 1) | GetToDs(pframe);
+	unsigned int	to_fr_ds	= (GetToDs(pframe) << 1) | GetFrDs(pframe);
 
 	switch (to_fr_ds) {
 	case 0x00:	/* ToDs=0, FromDs=0 */
 		sa = get_addr2_ptr(pframe);
 		break;
-	case 0x01:	/* ToDs=1, FromDs=0 */
-		sa = get_addr2_ptr(pframe);
-		break;
-	case 0x02:	/* ToDs=0, FromDs=1 */
+	case 0x01:	/* ToDs=0, FromDs=1 */
 		sa = GetAddr3Ptr(pframe);
+		break;
+	case 0x02:	/* ToDs=1, FromDs=0 */
+		sa = get_addr2_ptr(pframe);
 		break;
 	default:	/* ToDs=1, FromDs=1 */
 		sa = GetAddr4Ptr(pframe);
@@ -527,25 +523,25 @@ __inline static unsigned char *get_sa(unsigned char *pframe)
 /* can't apply to mesh mode */
 __inline static unsigned char *get_hdr_bssid(unsigned char *pframe)
 {
-	unsigned char	*bssid= NULL;
-	unsigned int	to_fr_ds	= (GetFrDs(pframe) << 1) | GetToDs(pframe);
+	unsigned char	*sa = NULL;
+	unsigned int	to_fr_ds	= (GetToDs(pframe) << 1) | GetFrDs(pframe);
 
 	switch (to_fr_ds) {
 	case 0x00:	/* ToDs=0, FromDs=0 */
-		bssid = GetAddr3Ptr(pframe);
+		sa = GetAddr3Ptr(pframe);
 		break;
-	case 0x01:	/* ToDs=1, FromDs=0 */
-		bssid = GetAddr1Ptr(pframe);
+	case 0x01:	/* ToDs=0, FromDs=1 */
+		sa = get_addr2_ptr(pframe);
 		break;
-	case 0x02:	/* ToDs=0, FromDs=1 */
-		bssid = get_addr2_ptr(pframe);
+	case 0x02:	/* ToDs=1, FromDs=0 */
+		sa = GetAddr1Ptr(pframe);
 		break;
 	case 0x03:	/* ToDs=1, FromDs=1 */
-		bssid = GetAddr1Ptr(pframe);
+		sa = GetAddr1Ptr(pframe);
 		break;
 	}
 
-	return bssid;
+	return sa;
 }
 
 
@@ -1283,6 +1279,9 @@ enum P2P_PROTO_WK_ID {
 	P2P_PRE_TX_PROVDISC_PROCESS_WK = 2,
 	P2P_PRE_TX_NEGOREQ_PROCESS_WK = 3,
 	P2P_PRE_TX_INVITEREQ_PROCESS_WK = 4,
+	P2P_AP_P2P_CH_SWITCH_PROCESS_WK = 5,
+	P2P_RO_CH_WK = 6,
+	P2P_CANCEL_RO_CH_WK = 7,
 };
 
 #ifdef CONFIG_P2P_PS
@@ -1324,12 +1323,6 @@ enum P2P_PS_MODE {
 
 #define IP_MCAST_MAC(mac)		((mac[0] == 0x01) && (mac[1] == 0x00) && (mac[2] == 0x5e))
 #define ICMPV6_MCAST_MAC(mac)	((mac[0] == 0x33) && (mac[1] == 0x33) && (mac[2] != 0xff))
-
-enum RTW_ROCH_WK_ID{
-	ROCH_RO_CH_WK,
-	ROCH_CANCEL_RO_CH_WK,
-	ROCH_AP_ROCH_CH_SWITCH_PROCESS_WK,
-};
 
 #ifdef CONFIG_IOCTL_CFG80211
 /* Regulatroy Domain */
