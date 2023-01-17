@@ -8044,7 +8044,7 @@ static int rtw_wowlan_set_pattern(struct net_device *dev,
 	struct mlme_priv *pmlmepriv = &padapter->mlmepriv;
 	struct wowlan_ioctl_param poidparam;
 	int ret = 0;
-	u8 input[wrqu->data.length];
+	u8 input[MAX_IN_PATTERN_SIZE];
 	u8 index = 0;
 
 	poidparam.subcode = 0;

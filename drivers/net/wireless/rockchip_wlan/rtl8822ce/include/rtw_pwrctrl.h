@@ -56,6 +56,7 @@
 
 #define MAX_WKFM_SIZE	16 /* (16 bytes for WKFM bit mask, 16*8 = 128 bits) */
 #define MAX_WKFM_PATTERN_SIZE	128
+#define MAX_IN_PATTERN_SIZE		512
 
 /*
  * MAX_WKFM_PATTERN_STR_LEN : the max. length of wow pattern string

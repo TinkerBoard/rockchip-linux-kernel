@@ -979,7 +979,7 @@ MODULE_NAME = 88x2cu
 endif
 endif
 ifeq ($(CONFIG_PCI_HCI), y)
-MODULE_NAME = 88x2ce
+MODULE_NAME = 8822ce
 endif
 ifeq ($(CONFIG_SDIO_HCI), y)
 MODULE_NAME = 88x2cs
