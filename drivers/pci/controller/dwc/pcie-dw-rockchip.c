@@ -768,7 +768,8 @@ static int rk_pcie_establish_link(struct dw_pcie *pci)
 
 	/* Rest the device */
 	gpiod_set_value_cansleep(rk_pcie->rst_gpio, 0);
-	gpiod_set_value_cansleep(rk_pcie->pwr_gpio, 0);
+	if (!IS_ERR_OR_NULL(rk_pcie->pwr_gpio))
+		gpiod_set_value_cansleep(rk_pcie->pwr_gpio, 0);
 
 	rk_pcie_disable_ltssm(rk_pcie);
 	rk_pcie_link_status_clear(rk_pcie);
@@ -805,7 +806,8 @@ static int rk_pcie_establish_link(struct dw_pcie *pci)
 	dev_info(pci->dev, "power on!");
 	msleep(rk_pcie->perst_inactive_ms);
 	gpiod_set_value_cansleep(rk_pcie->rst_gpio, 1);
-	gpiod_set_value_cansleep(rk_pcie->pwr_gpio, 1);
+	if (!IS_ERR_OR_NULL(rk_pcie->pwr_gpio))
+		gpiod_set_value_cansleep(rk_pcie->pwr_gpio, 1);
 
 	/*
 	 * Add this 1ms delay because we observe link is always up stably after it and
@@ -1269,10 +1271,8 @@ static int rk_pcie_resource_get(struct platform_device *pdev,
 
 	rk_pcie->pwr_gpio = devm_gpiod_get_optional(&pdev->dev, "m2b-pwr-off",
                                                     GPIOD_OUT_HIGH);
-	if (IS_ERR(rk_pcie->pwr_gpio)) {
-                dev_err(&pdev->dev, "invalid m2b-pwr-off-gpios property in node\n");
-                return PTR_ERR(rk_pcie->pwr_gpio);
-        }
+	if (IS_ERR_OR_NULL(rk_pcie->pwr_gpio))
+		dev_info(&pdev->dev, "invalid m2b-pwr-off-gpios property in node\n");
 
 	if (device_property_read_u32(&pdev->dev, "rockchip,perst-inactive-ms",
 				     &rk_pcie->perst_inactive_ms))
