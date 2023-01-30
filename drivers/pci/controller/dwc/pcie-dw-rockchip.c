@@ -196,8 +196,13 @@ struct rk_pcie_of_data {
 #define to_rk_pcie(x)	dev_get_drvdata((x)->dev)
 
 #ifdef CONFIG_BOARDINFO
+extern int get_pcbid(void);
 extern int get_prjid(void);
 extern int get_odmid(void);
+#define M2B_PWR_OFF_N                   118
+#define PCB_ID_SR			18
+#define PRJ_ID_TB3_SKU3 		12
+#define ODM_ID_TB3			18
 #endif
 
 static int rk_pcie_read(void __iomem *addr, int size, u32 *val)
@@ -1269,10 +1274,31 @@ static int rk_pcie_resource_get(struct platform_device *pdev,
 		return PTR_ERR(rk_pcie->rst_gpio);
 	}
 
-	rk_pcie->pwr_gpio = devm_gpiod_get_optional(&pdev->dev, "m2b-pwr-off",
-                                                    GPIOD_OUT_HIGH);
-	if (IS_ERR_OR_NULL(rk_pcie->pwr_gpio))
-		dev_info(&pdev->dev, "invalid m2b-pwr-off-gpios property in node\n");
+	#ifdef CONFIG_BOARDINFO
+	dev_info(&pdev->dev, "pcbid=%d", get_pcbid());
+	// swap pcie3 and pcie2 after SR
+	if (get_pcbid() != PCB_ID_SR) {
+		//set m2b_pwr_off to pcie2 when board is not SR
+		if (!strcmp(dev_name(&pdev->dev), "3c0000000.pcie")) {
+			dev_info(&pdev->dev, "set m2b_pwr_off_n");
+			gpio_request(M2B_PWR_OFF_N,"m2b_pwr_off_n");
+			gpio_direction_output(M2B_PWR_OFF_N, 1);
+			rk_pcie->pwr_gpio = gpio_to_desc(M2B_PWR_OFF_N);
+			if (IS_ERR_OR_NULL(rk_pcie->pwr_gpio))
+				dev_err(&pdev->dev, "m2b_pwr_off_n init fail\n");
+		}
+	} else {
+		// set m2b_pwr_off to pcie3 when board is SR
+		if (!strcmp(dev_name(&pdev->dev), "3c0800000.pcie")) {
+			dev_info(&pdev->dev, "set m2b_pwr_off_n SR");
+			gpio_request(M2B_PWR_OFF_N,"m2b_pwr_off_n");
+			gpio_direction_output(M2B_PWR_OFF_N, 1);
+                        rk_pcie->pwr_gpio = gpio_to_desc(M2B_PWR_OFF_N);
+                        if (IS_ERR_OR_NULL(rk_pcie->pwr_gpio))
+                                dev_err(&pdev->dev, "m2b_pwr_off_n init fail\n");
+                }
+	}
+	#endif
 
 	if (device_property_read_u32(&pdev->dev, "rockchip,perst-inactive-ms",
 				     &rk_pcie->perst_inactive_ms))
@@ -2156,21 +2182,32 @@ release_driver:
 static int rk_pcie_probe(struct platform_device *pdev)
 {
         #ifdef CONFIG_BOARDINFO
+	struct device *dev = &pdev->dev;
 
-	struct device		*dev = &pdev->dev;
+	if (get_prjid() == -1 && get_odmid() == -1 && get_pcbid() == -1) {
+		dev_info(dev, "boardinfo driver not ready\n");
+		return -EPROBE_DEFER;
+	}
 
-	pr_info("rk_pcie_probe: dev_name=%s\n",dev_name(dev));
-        if (!strcmp(dev_name(dev), "3c0800000.pcie")) {
-                pr_info("rk_pcie_probe get_prjid=%d,get_odmid=%d", get_prjid(), get_odmid());
-                // Disable when Tinker3 SKU3 and pcie3x2 
-                if (get_prjid() == -1 && get_odmid() == -1) {
-                        pr_info("Get the project id and ODM id fail\n");
-                        return -EPROBE_DEFER;
-                } else if (get_prjid() == 12 && get_odmid() == 18) {
-                        pr_info("No b key sku return pcie3x2\n");
-                        return -ENODEV;
-                }
-        }
+	dev_info(dev, "prjid=%d, odmid=%d, pcbid=%d\n", get_prjid(), get_odmid(), get_pcbid());
+	if (get_prjid() == PRJ_ID_TB3_SKU3 &&
+	    get_odmid() == ODM_ID_TB3) {
+		// there's no m2b slot on tb3 sku3
+		if (get_pcbid() == PCB_ID_SR) {
+			if (!strcmp(dev_name(dev), "3c0800000.pcie")) {
+				dev_err(dev, "ignore this pcie controller on sku3 SR");
+				return -ENODEV;
+			}
+
+		} else {
+			// pcie2 swap with pcie3 after SR
+			if (!strcmp(dev_name(dev), "3c0000000.pcie")) {
+				dev_err(dev, "ignore this pcie controller on sku3");
+				return -ENODEV;
+			}
+
+		}
+	}
         #endif
 
 	if (IS_ENABLED(CONFIG_PCIE_RK_THREADED_INIT)) {
