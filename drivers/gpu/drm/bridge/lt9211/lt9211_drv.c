@@ -27,17 +27,27 @@
 #define DRIVER_NAME "lt9211"
 
 static struct lt9211_data *g_lt9211 = NULL;
-static int connect_lt9211 = 2;
+static int connect_lt9211 = 0;
+static int lt9211_is_probe = 2;
 
 //int display_debug_timing[8]= {0};
+
+int lt9211_is_probed(void){
+	printk(KERN_INFO "%s  lt9211 probe = %d\n", __func__, lt9211_is_probe);
+	if(lt9211_is_probe != 1) {
+		if(lt9211_is_probe >= 2 && lt9211_is_probe <= 4)
+			lt9211_is_probe++;
+		else
+			lt9211_is_probe = 0;
+	}
+
+	return lt9211_is_probe;
+}
+EXPORT_SYMBOL_GPL(lt9211_is_probed);
 
 int lt9211_is_connected(void)
 {
 	printk(KERN_INFO "%s  lt9211 connect = %d\n", __func__, connect_lt9211);
-	if(connect_lt9211 == 2) {
-		connect_lt9211 = 0;
-		return 2;
-	}
 	return connect_lt9211;
 }
 EXPORT_SYMBOL_GPL(lt9211_is_connected);
@@ -1104,7 +1114,7 @@ static int lt9211_probe(struct i2c_client *i2c, const struct i2c_device_id *id)
 	struct lt9211_data *lt9211;
 	struct device *dev = &i2c->dev;
 	int ret;
-
+	lt9211_is_probe = 1;
 	printk(KERN_INFO "%s +\n", __func__);
 	if (!dev->of_node)
 		return -EINVAL;

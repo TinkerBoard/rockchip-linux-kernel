@@ -968,8 +968,10 @@ static int dw_mipi_dsi_get_dsc_info_from_sink(struct dw_mipi_dsi_rockchip *dsi,
 
 #if defined(CONFIG_DRM_I2C_LT9211)
 extern int lt9211_is_connected(void);
+extern int lt9211_is_probed(void);
 #else
 static int lt9211_is_connected(void) { return 0; }
+static int lt9211_is_probed(void) { return 0; }
 #endif
 static int dw_mipi_dsi_rockchip_bind(struct device *dev,
 				     struct device *master,
@@ -980,11 +982,14 @@ static int dw_mipi_dsi_rockchip_bind(struct device *dev,
 	struct device *second;
 	int ret;
 
+	if(lt9211_is_probed() > 1)
+		return -EPROBE_DEFER;
+
     if(!lt9211_is_connected()) {
-            pr_info("dsi-%d panel or lt9211 aren't connected\n", dsi->id);
-            return 0;
+        pr_info("dsi-%d panel or lt9211 aren't connected\n", dsi->id);
+        return 0;
     } else {
-            pr_info("dsi-%d panel or lt9211 is connected\n", dsi->id);
+        pr_info("dsi-%d panel or lt9211 is connected\n", dsi->id);
     }
 	ret = drm_of_find_panel_or_bridge(dsi->dev->of_node, 1, 0,
 					  &dsi->panel, &dsi->bridge);

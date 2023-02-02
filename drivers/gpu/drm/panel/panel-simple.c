@@ -46,6 +46,7 @@
 extern void lt9211_loader_protect(bool on);
 extern void lt9211_bridge_enable(int t);
 extern void lt9211_bridge_disable(void);
+extern int lt9211_is_probed(void);
 extern int lt9211_is_connected(void);
 extern void lt9211_set_videomode(struct videomode vm);
 extern bool lt9211_test_pattern(void);
@@ -59,6 +60,7 @@ static void lt9211_loader_protect(bool on) { return ; }
 static void lt9211_bridge_enable(int t) { return ; }
 static void lt9211_bridge_disable(void) { return ; }
 static int lt9211_is_connected(void) { return 0; }
+static int lt9211_is_probed(void) { return 0; }
 static void lt9211_set_videomode(struct videomode vm) { return ; }
 static bool lt9211_test_pattern(void) { return false; }
 static void lt9211_lvds_pattern_config(void) { return ; }
@@ -5134,7 +5136,7 @@ static int panel_simple_dsi_probe(struct mipi_dsi_device *dsi)
 	if (!id)
 		return -ENODEV;
 
-	if(lt9211_is_connected() == 2)
+	if(lt9211_is_probed() > 1)
 		return -EPROBE_DEFER;
 
 	if (!id->data) {
