@@ -6996,6 +6996,40 @@ static void vop2_post_color_swap(struct drm_crtc *crtc)
 	VOP_MODULE_SET(vop2, vp, dsp_data_swap, data_swap);
 }
 
+#define ASUS_HDMI_RESOLUTION_FILE_PATH "/boot/display/hdmi/xrandr.cfg"
+#define ASUS_DP_RESOLUTION_FILE_PATH "/boot/display/dp/xrandr.cfg"
+static void asus_write_resolution_to_file(char *buf, int writelen, int type)
+{
+	struct file *fp;
+	loff_t pos = 0;
+
+	if(type == DRM_MODE_CONNECTOR_HDMIA)
+	{
+		fp = filp_open(ASUS_HDMI_RESOLUTION_FILE_PATH, O_CREAT | O_WRONLY, 0644);
+
+		if(!IS_ERR(fp))
+		{
+			kernel_write(fp, buf, writelen, &pos);
+			filp_close(fp, NULL);
+		}
+		else
+			pr_err("%s: HDMI failed to open file\n", __func__);
+
+	}
+	else if(type == DRM_MODE_CONNECTOR_DisplayPort) {
+		fp = filp_open(ASUS_HDMI_RESOLUTION_FILE_PATH, O_CREAT | O_WRONLY, 0644);
+
+		if(!IS_ERR(fp)) {
+			kernel_write(fp, buf, writelen, &pos);
+			filp_close(fp, NULL);
+		}
+		else
+			pr_err("%s: DP failed to open file\n", __func__);
+	}
+	else
+		pr_err("%s: error type\n", __func__);
+}
+
 static void vop2_crtc_atomic_enable(struct drm_crtc *crtc, struct drm_crtc_state *old_state)
 {
 	struct vop2_video_port *vp = to_vop2_video_port(crtc);
@@ -7029,6 +7063,7 @@ static void vop2_crtc_atomic_enable(struct drm_crtc *crtc, struct drm_crtc_state
 	int splice_en = 0;
 	int port_mux;
 	int ret;
+	char resolution[64]={0};
 
 	if (old_state && old_state->self_refresh_active) {
 		drm_crtc_vblank_on(crtc);
@@ -7072,7 +7107,8 @@ static void vop2_crtc_atomic_enable(struct drm_crtc *crtc, struct drm_crtc_state
 			     vcstate->dsc_id, dsc_sink_cap->slice_width,
 			     dsc_sink_cap->slice_height, vcstate->dsc_slice_num);
 	}
-
+	sprintf(resolution, "%dx%d\n", hdisplay, vdisplay);
+	asus_write_resolution_to_file(resolution, strlen(resolution) + 1, vcstate->output_type);
 	vop2_initial(crtc);
 	vcstate->vdisplay = vdisplay;
 	vcstate->mode_update = vop2_crtc_mode_update(crtc);
