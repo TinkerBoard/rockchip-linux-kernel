@@ -186,6 +186,7 @@
 		status = "okay";
 		compatible = "simple-audio-card";
 		simple-audio-card,name = "ROCKCHIP,SPDIF";
+		simple-audio-card,mclk-fs = <128>;
 		simple-audio-card,cpu {
 				sound-dai = <&spdif_8ch>;
 		};
@@ -1430,7 +1431,7 @@
 };
 
 &spdif_8ch {
-	status = "okay";
+	status = "disabled";
 };
 
 &tsadc {
@@ -1579,9 +1580,5 @@
 };
 &pwm15 {
 	pinctrl-0 = <&pwm15m1_pins>;
-	status = "disabled";
-};
-&spdif_8ch {
-	pinctrl-0 = <&spdifm2_tx>;
 	status = "disabled";
 };
