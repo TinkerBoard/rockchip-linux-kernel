@@ -1713,17 +1713,16 @@ static int dwc3_probe(struct platform_device *pdev)
 
 	dwc3_check_params(dwc);
 
-	if (!strcmp(dev_name(dev), "fe900000.dwc3")) {
-		int project_id = get_project_id();
-		int i = (project_id == 3 || project_id == 4)? 1 : 0;
+	if (get_project_id() == 3 || get_project_id() == 4)
+		dwc->gpio_hub_vbus = devm_gpiod_get_index_optional(dev,
+					"hub-vbus", 1, GPIOD_OUT_LOW);
+	else
+		dwc->gpio_hub_vbus = devm_gpiod_get_index_optional(dev,
+					"hub-vbus", 0, GPIOD_OUT_LOW);
 
-		dwc->gpio_hub_vbus = devm_gpiod_get_index_optional(dev, "hub-vbus", i, GPIOD_OUT_HIGH);
-		if (IS_ERR(dwc->gpio_hub_vbus))
-			dev_err(dev, "Could not get named GPIO for hub-vbus-gpios.\n");
-		else {
-			dev_info(dev, "Set hub-vbus-gpios to high.\n");
-			gpiod_set_value(dwc->gpio_hub_vbus, 1);
-		}
+	if (IS_ERR(dwc->gpio_hub_vbus)) {
+		dev_err(dev, "Could not get named GPIO for hub-vbus-gpios.\n");
+		dwc->gpio_hub_vbus = NULL;
 	}
 
 	dwc3_debugfs_init(dwc);
@@ -1731,6 +1730,9 @@ static int dwc3_probe(struct platform_device *pdev)
 	ret = dwc3_core_init_mode(dwc);
 	if (ret)
 		goto err5;
+
+	if (dwc->gpio_hub_vbus && dwc->dr_mode == USB_DR_MODE_HOST)
+			gpiod_set_value(dwc->gpio_hub_vbus, 1);
 
 	if (dwc->en_runtime)
 		async_schedule(dwc3_rockchip_async_probe, dwc);

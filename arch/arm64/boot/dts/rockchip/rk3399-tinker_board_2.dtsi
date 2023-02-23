@@ -707,7 +707,6 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&fusb0_int>;
 		int-n-gpios = <&gpio1 2 GPIO_ACTIVE_HIGH>;
-		vbus-5v-gpios = <&gpio1 RK_PA3 GPIO_ACTIVE_HIGH>;
 		status = "okay";
 	};
 };
@@ -1349,6 +1348,11 @@
 	};
 
 	usb_hub {
+		typec_vbus_gpio: tpyec-vbus-gpio {
+			rockchip,pins =
+				<RK_GPIO1 RK_PA3 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+
 		hub_vbus_gpio: hub-vbus-gpio {
 			rockchip,pins =
 				<RK_GPIO2 RK_PB4 RK_FUNC_GPIO &pcfg_pull_none>;

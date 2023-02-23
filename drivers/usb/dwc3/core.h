@@ -1259,6 +1259,8 @@ struct dwc3 {
 
 	u16			imod_interval;
 	struct gpio_desc        *gpio_hub_vbus;
+	struct notifier_block	vbus_nb;
+	struct work_struct 	vbus_event_work;
 };
 
 #define INCRX_BURST_MODE 0

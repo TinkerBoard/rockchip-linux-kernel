@@ -896,7 +896,6 @@
 		pinctrl-0 = <&fusb0_int>;
 		interrupt-parent = <&gpio1>;
 		interrupts = <2 IRQ_TYPE_LEVEL_LOW>;
-		vbus-5v-gpios = <&gpio1 RK_PA3 GPIO_ACTIVE_HIGH>;
 		usb_con: connector {
 			compatible = "usb-c-connector";
 			label = "USB-C";
@@ -1021,7 +1020,11 @@
 };
 
 &usbdrd_dwc3_0 {
-        extcon = <&fusb0>, <&rtusb0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&typec_vbus_gpio>;
+	hub-vbus-gpios = <&gpio1 RK_PA3 GPIO_ACTIVE_HIGH>,
+			 <&gpio1 RK_PA3 GPIO_ACTIVE_HIGH>;
+	extcon = <&fusb0>, <&rtusb0>;
 };
 
 &spi1 {
