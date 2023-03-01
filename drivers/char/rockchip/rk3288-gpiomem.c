@@ -52,6 +52,7 @@
 #include <linux/cdev.h>
 #include <linux/pagemap.h>
 #include <linux/io.h>
+#include <linux/gpio.h>
 
 #define DEVICE_NAME "rk3288-gpiomem"
 #define DRIVER_NAME "gpiomem-rk3288"
@@ -185,7 +186,9 @@ static int rk3288_gpiomem_dev_uevent(struct device *dev, struct kobj_uevent_env 
 *
 ***************************************************************************/
 
-
+#define GPIO5_C3_pin22 171
+#define GPIO6_A3_pin38 187
+#define GPIO7_C6_pin33 238
 static int rk3288_gpiomem_probe(struct platform_device *pdev)
 {
 	int err;
@@ -245,6 +248,24 @@ static int rk3288_gpiomem_probe(struct platform_device *pdev)
 
 	dev_info(inst->dev, "Initialised: Registers at 0x%08lx",
 		inst->gpio_regs_phys);
+
+
+        gpio_request(GPIO5_C3_pin22, "gpio5_c3_pin22");
+        gpio_direction_output(GPIO5_C3_pin22, 1);
+        pr_info("GPIO5_C3_pin22 =%s \n", gpio_get_value(GPIO5_C3_pin22)? "H":"L");
+        gpio_export(GPIO5_C3_pin22, true);
+
+        gpio_request(GPIO6_A3_pin38, "gpio6_a3_pin38");
+        gpio_direction_output(GPIO6_A3_pin38, 1);
+        pr_info("GPIO6_A3_pin38 =%s \n", gpio_get_value(GPIO6_A3_pin38)? "H":"L");
+        gpio_export(GPIO6_A3_pin38, true);
+
+
+        gpio_request(GPIO7_C6_pin33, "gpio7_c6_pin33");
+        gpio_direction_input(GPIO7_C6_pin33);
+        pr_info("GPIO7_C6_pin33 =%s \n", gpio_get_value(GPIO7_C6_pin33)? "H":"L");
+        gpio_export(GPIO7_C6_pin33, true);
+
 
 	return 0;
 

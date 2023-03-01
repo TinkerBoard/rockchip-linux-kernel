@@ -978,7 +978,7 @@
 
 &pinctrl {
         pinctrl-names = "default";
-        pinctrl-0 = <&gpio_init>;
+        pinctrl-0 = <&gpio_init>,<&customer_init>;
 
 	pcfg_output_low: pcfg-output-low {
 		output-low;
@@ -989,10 +989,18 @@
                         rockchip,pins =
 				<7 9 RK_FUNC_GPIO &pcfg_pull_down>,
 				<7 13 RK_FUNC_GPIO &pcfg_pull_down>,
-				<7 22 RK_FUNC_GPIO &pcfg_pull_none>,
 				<7 23 RK_FUNC_GPIO &pcfg_pull_none>;
 		};
 	};
+
+        customer_init_config {
+                customer_init: customer-init {
+                        rockchip,pins =
+                                <5 19 RK_FUNC_GPIO &pcfg_pull_none>,
+                                <6 3 RK_FUNC_GPIO &pcfg_pull_none>,
+                                <7 22 RK_FUNC_GPIO &pcfg_pull_down>;
+                };
+        };
 
 	backlight {
 		bl_en: bl-en {
