@@ -14,10 +14,15 @@
 #include <linux/mod_devicetable.h>
 #include <linux/module.h>
 #include <linux/of.h>
+#include <linux/gpio.h>
+#include <linux/delay.h>
 
 enum tb3_rs9_model {
 	RENESAS_9FGV0441,
 };
+
+#define M2B_PWR_OFF_N                   118
+#define M2B_RESET                   120
 
 /* Structure to describe features of a particular 9-series model */
 struct tb3_rs9_chip_info {
@@ -38,6 +43,23 @@ static int tb3_rs9_probe(struct i2c_client *client)
 	return ret;
 }
 
+
+static void tb3_rs9_shutdown(struct i2c_client *client)
+{
+        pr_info("set m2b_reset to high");
+        gpio_request(M2B_RESET,"m2b_reset");
+        pr_info("before M2B_RESET =%s \n", gpio_get_value(M2B_RESET)? "H":"L");
+        gpio_direction_output(M2B_RESET, 1);
+        pr_info("after M2B_RESET =%s \n", gpio_get_value(M2B_RESET)? "H":"L");
+
+        mdelay(150);
+
+        pr_info("set m2b_pwr_off_n SR to low");
+        gpio_request(M2B_PWR_OFF_N,"m2b_pwr_off_n");
+        pr_info("before M2B_PWR_OFF_N =%s \n", gpio_get_value(M2B_PWR_OFF_N)? "H":"L");
+        gpio_direction_output(M2B_PWR_OFF_N, 0);
+        pr_info("after M2B_PWR_OFF_N =%s \n", gpio_get_value(M2B_PWR_OFF_N)? "H":"L");
+}
 
 static const struct tb3_rs9_chip_info tb3_renesas_9fgv0441_info = {
 	.model		= RENESAS_9FGV0441,
@@ -62,6 +84,7 @@ static struct i2c_driver tb3_rs9_driver = {
 		.of_match_table = tb3_clk_rs9_of_match,
 	},
 	.probe_new	= tb3_rs9_probe,
+	.shutdown	= tb3_rs9_shutdown,
 	.id_table	= tb3_rs9_id,
 };
 module_i2c_driver(tb3_rs9_driver);
