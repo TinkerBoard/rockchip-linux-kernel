@@ -169,6 +169,10 @@
 		};
 	};
 
+	sound-ext-card {
+		status = "disabled";
+	};
+
 	rk809_sound: rk809-sound {
 		status = "okay";
 		compatible = "rockchip,multicodecs-card";
