@@ -1040,7 +1040,9 @@ static void rtw_dev_remove(struct pci_dev *pdev)
 
 static void rtw_dev_shutdown(struct pci_dev *pdev)
 {
-	rtw_dev_remove(pdev);
+	/* Do not remove the pci interface but send D3Hot */
+	pci_set_power_state(pdev, PCI_D3hot);
+	//rtw_dev_remove(pdev);
 }
 
 #ifdef CONFIG_PLATFORM_AML_S905
