@@ -13,7 +13,6 @@
 		mmc1 = &sdmmc0;
 		mmc2 = &sdmmc1;
 		mmc3 = &sdmmc2;
-                rtc0 = &rtc_isl1208;
 	};
 
 	chosen: chosen {
@@ -175,7 +174,7 @@
         pinctrl-0 = <&i2c3m1_xfer>;
         status = "okay";
 
-        rtc_isl1208: rtc@6f {
+        rtc3_isl1208: rtc3@6f {
                 compatible = "isil,isl1208";
                 pinctrl-names = "default";
                 pinctrl-0 = <&pinctrl_externalrtc_reg>;
@@ -211,6 +210,15 @@
                 status = "okay";
         };
 
+        rtc2_isl1208: rtc2@6f {
+                compatible = "isil,isl1208";
+                pinctrl-names = "default";
+                pinctrl-0 = <&pinctrl_externalrtc_reg>;
+                interrupt-names = "irq";
+                interrupts-extended = <&gpio0 RK_PD3 IRQ_TYPE_EDGE_FALLING>;
+                reg = <0x6f>;
+                status = "okay";
+        };
 };
 
 &pwm0 {
