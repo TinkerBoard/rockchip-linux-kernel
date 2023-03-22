@@ -7362,6 +7362,13 @@ void rtw_pd_iface_free(struct wiphy *wiphy)
 	rtnl_lock_needed = rtw_rtnl_lock_needed(dvobj);
 	if (rtnl_lock_needed)
 		rtnl_lock();
+
+	if (!wiphy_data->pd_wdev) {
+		if (rtnl_lock_needed)
+			rtnl_unlock();
+		goto exit;
+	}
+
 	cfg80211_unregister_wdev(wiphy_data->pd_wdev);
 	if (rtnl_lock_needed)
 		rtnl_unlock();
