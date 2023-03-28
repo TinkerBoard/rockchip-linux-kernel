@@ -369,7 +369,7 @@ static int boardinfo_probe(struct platform_device *pdev)
 
 			switch(odmid) {
 				case 18:
-					odm = "Tinker Board 3";
+					odm = "Tinker Board 3N";
 					break;
 				case 15:
 					odm = "Sanden";
@@ -398,13 +398,13 @@ static int boardinfo_probe(struct platform_device *pdev)
 					if (odmid == 15)
 						boardinfo = "Sanden - SKU1";
 					else
-						boardinfo = "Tinker Board 3 - SKU1";
+						boardinfo = "Tinker Board 3N - SKU1";
 					break;
 				case 15:
-					boardinfo = "Tinker Board 3 - SKU2";
+					boardinfo = "Tinker Board 3N - SKU2";
 					break;
 				case 12:
-					boardinfo = "Tinker Board 3 - SKU3";
+					boardinfo = "Tinker Board 3N - SKU3";
 					break;
 				case 9:
 				case 6:
