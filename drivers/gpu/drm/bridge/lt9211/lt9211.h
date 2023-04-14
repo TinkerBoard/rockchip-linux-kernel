@@ -36,6 +36,7 @@ struct lt9211_data {
 	bool status;
 	bool init;
 	bool uboot;
+	bool enable_lt9211;
 
 	bool powered;
 
