@@ -177,7 +177,7 @@
 		status = "okay";
 		compatible = "rockchip,multicodecs-card";
 		rockchip,card-name = "rockchip-rk809";
-		hp-det-gpio = <&gpio3 RK_PC2 GPIO_ACTIVE_HIGH>;
+		hp-det-gpio = <&gpio3 RK_PC2 GPIO_ACTIVE_LOW>;
 		rockchip,format = "i2s";
 		rockchip,mclk-fs = <256>;
 		rockchip,cpu = <&i2s1_8ch>;
