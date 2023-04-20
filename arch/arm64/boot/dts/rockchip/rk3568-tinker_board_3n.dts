@@ -173,6 +173,7 @@
 &i2c3 {
         pinctrl-0 = <&i2c3m1_xfer>;
         status = "okay";
+	clock-frequency = <70000>;
 
         rtc3_isl1208: rtc3@6f {
                 compatible = "isil,isl1208";
