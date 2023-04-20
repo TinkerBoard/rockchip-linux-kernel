@@ -7013,6 +7013,11 @@ static void vop2_post_color_swap(struct drm_crtc *crtc)
 
 #define ASUS_HDMI_RESOLUTION_FILE_PATH "/boot/display/hdmi/xrandr.cfg"
 #define ASUS_DP_RESOLUTION_FILE_PATH "/boot/display/dp/xrandr.cfg"
+static struct workqueue_struct *resolution_wq = NULL;
+static struct work_struct resolution_work;
+static char resolution_g[64]={0};
+static int output_type_g = 0;
+
 static void asus_write_resolution_to_file(char *buf, int writelen, int type)
 {
 	struct file *fp;
@@ -7025,6 +7030,7 @@ static void asus_write_resolution_to_file(char *buf, int writelen, int type)
 		if(!IS_ERR(fp))
 		{
 			kernel_write(fp, buf, writelen, &pos);
+			pr_err("%s: set HDMI resolution file to %s", __func__, buf);
 			filp_close(fp, NULL);
 		}
 		else
@@ -7036,6 +7042,7 @@ static void asus_write_resolution_to_file(char *buf, int writelen, int type)
 
 		if(!IS_ERR(fp)) {
 			kernel_write(fp, buf, writelen, &pos);
+			pr_err("%s: set DP resolution file to %s", __func__, buf);
 			filp_close(fp, NULL);
 		}
 		else
@@ -7043,6 +7050,11 @@ static void asus_write_resolution_to_file(char *buf, int writelen, int type)
 	}
 	else
 		pr_err("%s: error type\n", __func__);
+}
+
+static void resolution_work_handler(struct work_struct *data)
+{
+	asus_write_resolution_to_file(resolution_g, strlen(resolution_g) + 1, output_type_g);
 }
 
 static void vop2_crtc_atomic_enable(struct drm_crtc *crtc, struct drm_crtc_state *old_state)
@@ -7123,7 +7135,9 @@ static void vop2_crtc_atomic_enable(struct drm_crtc *crtc, struct drm_crtc_state
 			     dsc_sink_cap->slice_height, vcstate->dsc_slice_num);
 	}
 	sprintf(resolution, "%dx%d\n", hdisplay, vdisplay);
-	asus_write_resolution_to_file(resolution, strlen(resolution) + 1, vcstate->output_type);
+	strncpy(resolution_g, resolution, strlen(resolution));
+	output_type_g = vcstate->output_type;
+	queue_work(resolution_wq, &resolution_work);
 	vop2_initial(crtc);
 	vcstate->vdisplay = vdisplay;
 	vcstate->mode_update = vop2_crtc_mode_update(crtc);
@@ -10432,6 +10446,9 @@ static int vop2_bind(struct device *dev, struct device *master, void *data)
 	vop2_cubic_lut_init(vop2);
 	vop2_wb_connector_init(vop2, registered_num_crtcs);
 	pm_runtime_enable(&pdev->dev);
+
+	resolution_wq = create_singlethread_workqueue("resolution_workqueue");
+	INIT_WORK(&resolution_work, resolution_work_handler);
 
 	return 0;
 }
