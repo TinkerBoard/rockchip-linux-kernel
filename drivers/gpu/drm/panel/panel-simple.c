@@ -481,22 +481,9 @@ static int panel_simple_disable(struct drm_panel *panel)
 	struct panel_simple *p = to_panel_simple(panel);
 
 	printk("panel_simple_disable p->enabled=%d\n", p->enabled);
+
 	if (!p->enabled)
 		return 0;
-
-    if (lt9211_is_connected()) {
-        if(p->desc->pwseq_delay.t3){
-            msleep(p->desc->pwseq_delay.t7);//Backlight off to Backlight sys Disable
-			lt9211_backlight_sys_disable();
-			msleep(p->desc->pwseq_delay.t3 - p->desc->pwseq_delay.t7);//Backlight sys Disable or backlight power off to stop lvds signal
-		}
-        lt9211_bridge_disable();
-        if(p->desc->pwseq_delay.t4)
-            msleep(p->desc->pwseq_delay.t4);//stop lvds signal to turn VCC off
-        lt9211_lvds_power_off();
-        if(p->desc->pwseq_delay.t5)
-            msleep(p->desc->pwseq_delay.t5);//lvds power off to turn on lvds power
-    }
 
 	if (p->desc->delay.disable)
 		msleep(p->desc->delay.disable);
@@ -511,8 +498,23 @@ static int panel_simple_unprepare(struct drm_panel *panel)
 	struct panel_simple *p = to_panel_simple(panel);
 
 	printk("panel_simple_unprepare p->prepared=%d\n", p->prepared);
+
 	if (!p->prepared)
 		return 0;
+
+	if (lt9211_is_connected()) {
+        if(p->desc->pwseq_delay.t3){
+            msleep(p->desc->pwseq_delay.t7);//Backlight off to Backlight sys Disable
+			lt9211_backlight_sys_disable();
+			msleep(p->desc->pwseq_delay.t3 - p->desc->pwseq_delay.t7);//Backlight sys Disable or backlight power off to stop lvds signal
+		}
+        lt9211_bridge_disable();
+        if(p->desc->pwseq_delay.t4)
+            msleep(p->desc->pwseq_delay.t4);//stop lvds signal to turn VCC off
+        lt9211_lvds_power_off();
+        if(p->desc->pwseq_delay.t5)
+            msleep(p->desc->pwseq_delay.t5);//lvds power off to turn on lvds power
+    }
 
 	if (p->desc->exit_seq)
 		if (p->dsi)
@@ -566,6 +568,7 @@ static int panel_simple_prepare(struct drm_panel *panel)
 	int hpd_asserted;
 
 	printk("panel_simple_prepare p->prepared=%d\n", p->prepared);
+
 	if (p->prepared)
 		return 0;
 
@@ -635,6 +638,7 @@ static int panel_simple_enable(struct drm_panel *panel)
 	struct panel_simple *p = to_panel_simple(panel);
 
 	printk("panel_simple_enable p->enabled=%d\n", p->enabled);
+
 	if (p->enabled)
 		return 0;
 
