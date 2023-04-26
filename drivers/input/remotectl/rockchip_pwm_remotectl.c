@@ -19,7 +19,37 @@
 #include <linux/rockchip/rockchip_sip.h>
 #include "rockchip_pwm_remotectl.h"
 
+#include <linux/kernel.h>
+#include <linux/fs.h>
+#include <linux/sysfs.h>
 
+static int high_period = 0;
+static int low_period = 0;
+
+static ssize_t getperiod_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	if (high_period != 0 && low_period != 0) {
+		return sprintf(buf, "%d\n", (high_period * 10) /
+				(high_period + low_period));
+	} else {
+		return 0;
+	}
+}
+
+static struct kobj_attribute getperiod_attribute =
+		__ATTR(getperiod, 0444, getperiod_show, NULL);
+
+static struct attribute *attrs[] = {
+	&getperiod_attribute.attr,
+	NULL,
+};
+
+static struct attribute_group attr_group = {
+	.attrs = attrs,
+};
+
+static struct kobject *ir_kobj;
 
 /*
  * sys/module/rk_pwm_remotectl/parameters,
@@ -335,8 +365,10 @@ static irqreturn_t rockchip_pwm_irq(int irq, void *dev_id)
 		return IRQ_NONE;
 	if ((val & PWM_CH_POL(id)) == 0) {
 		temp_hpr = readl_relaxed(ddata->base + PWM_REG_HPR);
+		high_period = temp_hpr;
 		DBG("hpr=%d\n", temp_hpr);
 		temp_lpr = readl_relaxed(ddata->base + PWM_REG_LPR);
+		low_period = temp_lpr;
 		DBG("lpr=%d\n", temp_lpr);
 		temp_period = ddata->pwm_freq_nstime * temp_lpr / 1000;
 		if (temp_period > RK_PWM_TIME_BIT0_MIN) {
@@ -588,6 +620,14 @@ static int rk_pwm_probe(struct platform_device *pdev)
 	int pwm_freq;
 	int count;
 
+	ir_kobj = kobject_create_and_add("ir_sysfs", kernel_kobj);
+	if (!ir_kobj)
+		return -ENOMEM;
+
+	ret = sysfs_create_group(ir_kobj, &attr_group);
+	if (ret)
+		kobject_put(ir_kobj);
+
 	pr_err(".. rk pwm remotectl v2.0 init\n");
 	r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	if (!r) {
@@ -744,6 +784,7 @@ error_clk:
 
 static int rk_pwm_remove(struct platform_device *pdev)
 {
+	kobject_put(ir_kobj);
 	return 0;
 }
 
