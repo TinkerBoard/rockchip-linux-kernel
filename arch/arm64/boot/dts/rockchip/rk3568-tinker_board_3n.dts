@@ -231,7 +231,7 @@
 };
 
 &uart0_enable {
-	status = "disabled";
+	status = "okay";
 	gpio = <&gpio2 RK_PD2 GPIO_ACTIVE_HIGH>;
 	enable-active-high;
 	regulator-always-on;
@@ -256,7 +256,7 @@
 };
 
 &uart8_enable {
-	status = "disabled";
+	status = "okay";
 	gpio = <&gpio3 RK_PA4 GPIO_ACTIVE_HIGH>;
 	enable-active-high;
 	regulator-always-on;
