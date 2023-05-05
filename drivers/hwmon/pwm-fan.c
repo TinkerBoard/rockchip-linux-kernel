@@ -101,6 +101,23 @@ exit_set_pwm_err:
 	return ret;
 }
 
+static int  __set_period(struct pwm_fan_ctx *ctx, unsigned long period)
+{
+	int ret = 0;
+	struct pwm_state state = { };
+
+	mutex_lock(&ctx->lock);
+	pwm_init_state(ctx->pwm, &state);
+	state.period = period;
+	state.duty_cycle = DIV_ROUND_UP(ctx->pwm_value * (period - 1), MAX_PWM);
+	state.enabled = true;
+	ret = pwm_apply_state(ctx->pwm, &state);
+	if (!ret)
+		ctx->pwm->args.period = period;
+	mutex_unlock(&ctx->lock);
+	return ret;
+}
+
 static void pwm_fan_update_state(struct pwm_fan_ctx *ctx, unsigned long pwm)
 {
 	int i;
@@ -112,7 +129,35 @@ static void pwm_fan_update_state(struct pwm_fan_ctx *ctx, unsigned long pwm)
 	ctx->pwm_fan_state = i;
 }
 
-static ssize_t pwm_store(struct device *dev, struct device_attribute *attr,
+static ssize_t period_store(struct device *dev, struct device_attribute *attr,
+			 const char *buf, size_t count)
+{
+	struct pwm_fan_ctx *ctx = dev_get_drvdata(dev);
+	unsigned long period;
+	int ret;
+
+	if (kstrtoul(buf, 10, &period))
+		return -EINVAL;
+
+	ret = __set_period(ctx, period);
+	if (ret)
+		return ret;
+
+	return count;
+}
+
+static ssize_t period_show(struct device *dev, struct device_attribute *attr,
+			char *buf)
+{
+	struct pwm_fan_ctx *ctx = dev_get_drvdata(dev);
+	struct pwm_state pwm_state;
+
+	pwm_get_state(ctx->pwm, &pwm_state);
+
+	return sprintf(buf, "%llu\n", pwm_state.period);
+}
+
+static ssize_t dutycycle_store(struct device *dev, struct device_attribute *attr,
 			 const char *buf, size_t count)
 {
 	struct pwm_fan_ctx *ctx = dev_get_drvdata(dev);
@@ -130,7 +175,7 @@ static ssize_t pwm_store(struct device *dev, struct device_attribute *attr,
 	return count;
 }
 
-static ssize_t pwm_show(struct device *dev, struct device_attribute *attr,
+static ssize_t dutycycle_show(struct device *dev, struct device_attribute *attr,
 			char *buf)
 {
 	struct pwm_fan_ctx *ctx = dev_get_drvdata(dev);
@@ -146,12 +191,14 @@ static ssize_t rpm_show(struct device *dev,
 	return sprintf(buf, "%u\n", ctx->rpm);
 }
 
-static SENSOR_DEVICE_ATTR_RW(pwm1, pwm, 0);
-static SENSOR_DEVICE_ATTR_RO(fan1_input, rpm, 0);
+static SENSOR_DEVICE_ATTR_RW(pwm_period, period, 0);
+static SENSOR_DEVICE_ATTR_RW(pwm_dutycycle, dutycycle, 0);
+static SENSOR_DEVICE_ATTR_RO(fan_input, rpm, 0);
 
 static struct attribute *pwm_fan_attrs[] = {
-	&sensor_dev_attr_pwm1.dev_attr.attr,
-	&sensor_dev_attr_fan1_input.dev_attr.attr,
+	&sensor_dev_attr_pwm_period.dev_attr.attr,
+	&sensor_dev_attr_pwm_dutycycle.dev_attr.attr,
+	&sensor_dev_attr_fan_input.dev_attr.attr,
 	NULL,
 };
 
