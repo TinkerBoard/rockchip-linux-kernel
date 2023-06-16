@@ -3,10 +3,10 @@ HAL = hal_g6
 
 ifeq ($(CONFIG_PHL_ARCH), y)
 phl_path := phl/
-phl_path_d1 := $(src)/phl/$(HAL)
+phl_path_d1 := $(srctree)/$(src)/phl/$(HAL)
 else
 phl_path :=
-phl_path_d1 := $(src)/$(HAL)
+phl_path_d1 := $(srctree)/$(src)/$(HAL)
 endif
 
 _HAL_FILES :=	$(phl_path)$(HAL)/hal_api_mac.o \
