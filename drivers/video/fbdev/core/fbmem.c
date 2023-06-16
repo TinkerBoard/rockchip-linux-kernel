@@ -622,8 +622,9 @@ int fb_prepare_logo(struct fb_info *info, int rotate)
 
 	if (info->flags & FBINFO_MISC_TILEBLITTING ||
 	    info->fbops->owner || !fb_logo_count)
+	{
 		return 0;
-
+	}
 	if (info->fix.visual == FB_VISUAL_DIRECTCOLOR) {
 		depth = info->var.blue.length;
 		if (info->var.red.length < depth)
