@@ -205,7 +205,7 @@ void rockchip_free_loader_memory(struct drm_device *drm)
 	}
 
 	memblock_free(logo->start, logo->size);
-	rockchip_drm_free_reserved_area(logo->dma_addr, logo->dma_addr + logo->size,
+	rockchip_drm_free_reserved_area(logo->start, logo->start + logo->size,
 					-1, "drm_logo");
 	kfree(logo);
 	private->logo = NULL;
@@ -240,6 +240,11 @@ static int init_loader_memory(struct drm_device *drm_dev)
 	size = resource_size(&res);
 	if (!size)
 		return -ENOMEM;
+	if (!IS_ALIGNED(res.start, PAGE_SIZE) || !IS_ALIGNED(size, PAGE_SIZE))
+		DRM_ERROR("Reserved logo memory should be aligned as:0x%lx, cureent is:start[%pad] size[%pad]\n",
+			  PAGE_SIZE, &res.start, &size);
+	if (pg_size != PAGE_SIZE)
+		DRM_WARN("iommu page size[0x%x] isn't equal to OS page size[0x%lx]\n", pg_size, PAGE_SIZE);
 
 	logo = kmalloc(sizeof(*logo), GFP_KERNEL);
 	if (!logo)
@@ -260,6 +265,7 @@ static int init_loader_memory(struct drm_device *drm_dev)
 	}
 
 	logo->dma_addr = start;
+	logo->start = res.start;
 	logo->size = size;
 	logo->count = 1;
 	private->logo = logo;
@@ -279,6 +285,9 @@ static int init_loader_memory(struct drm_device *drm_dev)
 	size = resource_size(&res);
 	if (!size)
 		return 0;
+	if (!IS_ALIGNED(res.start, PAGE_SIZE) || !IS_ALIGNED(size, PAGE_SIZE))
+		DRM_ERROR("Reserved drm cubic memory should be aligned as:0x%lx, cureent is:start[%pad] size[%pad]\n",
+			  PAGE_SIZE, &res.start, &size);
 
 	private->cubic_lut_kvaddr = phys_to_virt(start);
 	if (private->domain) {
@@ -1072,16 +1081,14 @@ void rockchip_drm_show_logo(struct drm_device *drm_dev)
 	private->loader_protect = true;
 	drm_modeset_unlock_all(drm_dev);
 
-	drm_for_each_crtc(crtc, drm_dev) {
-		struct drm_fb_helper *helper = private->fbdev_helper;
-		struct rockchip_crtc_state *s = NULL;
+	if (private->fbdev_helper && private->fbdev_helper->fb) {
+		drm_for_each_crtc(crtc, drm_dev) {
+			struct rockchip_crtc_state *s = NULL;
 
-		if (!helper)
-			break;
-
-		s = to_rockchip_crtc_state(crtc->state);
-		if (is_support_hotplug(s->output_type))
-			drm_framebuffer_get(helper->fb);
+			s = to_rockchip_crtc_state(crtc->state);
+			if (is_support_hotplug(s->output_type))
+				drm_framebuffer_get(private->fbdev_helper->fb);
+		}
 	}
 
 	return;

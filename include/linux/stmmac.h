@@ -158,7 +158,6 @@ struct plat_stmmacenet_data {
 	struct stmmac_est *est;
 	int clk_csr;
 	int has_gmac;
-	int sph_disable;
 	int enh_desc;
 	int tx_coe;
 	int rx_coe;
@@ -175,6 +174,7 @@ struct plat_stmmacenet_data {
 	int rx_fifo_size;
 	int dma_tx_size;
 	int dma_rx_size;
+	int flow_ctrl;
 	u32 addr64;
 	u32 rx_queues_to_use;
 	u32 tx_queues_to_use;
@@ -213,5 +213,6 @@ struct plat_stmmacenet_data {
 	bool is_in_suspend;
 	int wol_irq;
 	struct wake_lock wol_wake_lock;
+	bool sph_disable;
 };
 #endif
