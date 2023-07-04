@@ -1198,6 +1198,9 @@
 		opp-700000000 {
 			opp-hz = /bits/ 64 <700000000>;
 			opp-microvolt = <900000>;
+			opp-microvolt-L0 = <900000>;
+			opp-microvolt-L1 = <875000>;
+			opp-microvolt-L2 = <875000>;
 		};
 		opp-900000000 {
 			opp-hz = /bits/ 64 <900000000>;
@@ -1261,11 +1264,11 @@
 		nvmem-cells = <&gpu_leakage>, <&core_pvtm>, <&mbist_vmin>, <&gpu_opp_info>;
 		nvmem-cell-names = "leakage", "pvtm", "mbist-vmin", "opp-info";
 		rockchip,max-volt = <1000000>;
-		rockchip,temp-hysteresis = <5000>;
-		rockchip,low-temp = <0>;
+		rockchip,temp-hysteresis = <10000>;
+		rockchip,low-temp = <15000>;
 		rockchip,low-temp-adjust-volt = <
 			/* MHz    MHz    uV */
-			   0      800    50000
+			   0      900    50000
 		>;
 		rockchip,pvtm-voltage-sel = <
 			0        84000   0
@@ -1274,12 +1277,6 @@
 			91001    100000  3
 		>;
 		rockchip,pvtm-ch = <0 5>;
-        rockchip,temp-hysteresis = <10000>;
-		rockchip,low-temp = <15000>;
-		rockchip,low-temp-adjust-volt = <
-			/* MHz    MHz    uV */
-			   0      900    50000
-		>;
 		opp-200000000 {
 			opp-hz = /bits/ 64 <200000000>;
 			opp-microvolt = <850000 850000 1000000>;
