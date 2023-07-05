@@ -564,7 +564,7 @@ static int rockchip_cpufreq_cluster_init(int cpu, struct cluster_info *cluster)
 		reg_name = "cpu";
 	else if (of_find_property(dev->of_node, "cpu0-supply", NULL))
 		reg_name = "cpu0";
-	else if ((of_property_read_string(dev->of_node, "reg-name", (const char **)&reg_name)))
+	else
 		return -ENOENT;
 
 	np = of_parse_phandle(dev->of_node, "operating-points-v2", 0);
