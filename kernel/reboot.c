@@ -66,6 +66,7 @@ EXPORT_SYMBOL_GPL(pm_power_off_prepare);
 void emergency_restart(void)
 {
 	kmsg_dump(KMSG_DUMP_EMERG);
+	setmmcEmergency();
 	machine_emergency_restart();
 }
 EXPORT_SYMBOL_GPL(emergency_restart);
