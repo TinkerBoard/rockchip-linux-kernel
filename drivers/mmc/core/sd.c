@@ -1257,6 +1257,9 @@ static int _mmc_sd_shutdown(struct mmc_host *host)
 	mmc_regulator_set_vqmmc(host, &host->ios);
 	pr_info("Set signal voltage to initial state\n");
 
+	/* power up for sd boot test */
+	mmc_delay(50);
+	mmc_power_up(host, host->card->ocr);
 out:
 	mmc_release_host(host);
 	return err;

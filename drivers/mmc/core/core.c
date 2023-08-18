@@ -1188,7 +1188,7 @@ int mmc_host_set_uhs_voltage(struct mmc_host *host)
 		return -EAGAIN;
 
 	/* Keep clock gated for at least 10 ms, though spec only says 5 ms */
-	mmc_delay(10);
+	mmc_delay(50);
 	host->ios.clock = clock;
 	mmc_set_ios(host);
 
@@ -1225,7 +1225,7 @@ int mmc_set_uhs_voltage(struct mmc_host *host, u32 ocr)
 	 * The card should drive cmd and dat[0:3] low immediately
 	 * after the response of cmd11, but wait 1 ms to be sure
 	 */
-	mmc_delay(1);
+	mmc_delay(50);
 	if (host->ops->card_busy && !host->ops->card_busy(host)) {
 		err = -EAGAIN;
 		goto power_cycle;
@@ -1241,7 +1241,7 @@ int mmc_set_uhs_voltage(struct mmc_host *host, u32 ocr)
 	}
 
 	/* Wait for at least 1 ms according to spec */
-	mmc_delay(1);
+	mmc_delay(50);
 
 	/*
 	 * Failure to switch is indicated by the card holding
@@ -1342,9 +1342,7 @@ void mmc_power_up(struct mmc_host *host, u32 ocr)
 	 * to reach the minimum voltage.
 	 */
 	mmc_delay(host->ios.power_delay_ms);
-
 	mmc_pwrseq_post_power_on(host);
-
 	host->ios.clock = host->f_init;
 
 	host->ios.power_mode = MMC_POWER_ON;
@@ -1376,7 +1374,7 @@ void mmc_power_off(struct mmc_host *host)
 	 * XO-1.5, require a short delay after poweroff before the card
 	 * can be successfully turned on again.
 	 */
-	mmc_delay(1);
+	mmc_delay(50);
 }
 
 void mmc_power_cycle(struct mmc_host *host, u32 ocr)
