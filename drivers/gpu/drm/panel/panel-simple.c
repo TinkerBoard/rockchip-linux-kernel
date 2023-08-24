@@ -44,7 +44,7 @@
 #include "panel-simple.h"
 
 #ifdef CONFIG_DRM_I2C_LT9211
-extern void lt9211_loader_protect(bool on);
+//extern void lt9211_loader_protect(bool on);
 extern void lt9211_bridge_enable(int t);
 extern void lt9211_bridge_disable(void);
 extern int lt9211_is_probed(void);
@@ -52,12 +52,12 @@ extern int lt9211_is_connected(void);
 extern void lt9211_set_videomode(struct videomode vm);
 extern bool lt9211_test_pattern(void);
 extern void lt9211_lvds_pattern_config(void);
-extern void lt9211_lvds_power_on(void);
+//extern void lt9211_lvds_power_on(void);
 extern void lt9211_lvds_power_off(void);
 extern void lt9211_backlight_sys_enable(void);
 extern void lt9211_backlight_sys_disable(void);
 #else
-static void lt9211_loader_protect(bool on) { return ; }
+//static void lt9211_loader_protect(bool on) { return ; }
 static void lt9211_bridge_enable(int t) { return ; }
 static void lt9211_bridge_disable(void) { return ; }
 static int lt9211_is_connected(void) { return 0; }
@@ -65,7 +65,7 @@ static int lt9211_is_probed(void) { return 0; }
 static void lt9211_set_videomode(struct videomode vm) { return ; }
 static bool lt9211_test_pattern(void) { return false; }
 static void lt9211_lvds_pattern_config(void) { return ; }
-static void lt9211_lvds_power_on(void) { return ; }
+//static void lt9211_lvds_power_on(void) { return ; }
 static void lt9211_lvds_power_off(void) { return ; }
 static void lt9211_backlight_sys_enable(void) { return ; }
 static void lt9211_backlight_sys_disable(void) { return ; }
