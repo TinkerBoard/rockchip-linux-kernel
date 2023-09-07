@@ -355,6 +355,14 @@ static const struct dphy_pll_parameter_map dppa_map[] = {
 	{1500, 0x3c, CP_CURRENT_12UA, LPF_RESISTORS_10_5KOHM }
 };
 
+#if defined(CONFIG_TINKER_MCU)
+extern int tinker_mcu_is_connected(int dsi_id);
+extern int tinker_mcu_ili9881c_is_connected(int dsi_id);
+#else
+static int tinker_mcu_is_connected(int dsi_id)  { return 0; }
+static int tinker_mcu_ili9881c_is_connected(int dsi_id)  { return 0; }
+#endif
+
 static int max_mbps_to_parameter(unsigned int max_mbps)
 {
 	int i;
@@ -604,6 +612,11 @@ static unsigned int dw_mipi_dsi_calculate_lane_mpbs(struct dw_mipi_dsi_rockchip 
 			}
 		}
 	}
+#if defined(CONFIG_TINKER_MCU)
+	if(tinker_mcu_is_connected(dsi->id))
+		target_mbps = 696;
+#endif
+	printk("dw_mipi_dsi_get_lane_rate mode->clock=%d lane_rate=%u\n", mode->clock, target_mbps );
 
 	if (dsi->slave)
 		dsi->slave->lane_mbps = target_mbps;
@@ -1010,12 +1023,17 @@ static int dw_mipi_dsi_rockchip_bind(struct device *dev,
 	if(lt9211_is_probed() > 1)
 		return -EPROBE_DEFER;
 
-    if(!lt9211_is_connected()) {
-        pr_info("dsi-%d panel or lt9211 aren't connected\n", dsi->id);
-        return 0;
-    } else {
-        pr_info("dsi-%d panel or lt9211 is connected\n", dsi->id);
-    }
+#if defined(CONFIG_TINKER_MCU)
+	if(!tinker_mcu_is_connected(dsi->id) &&
+		!tinker_mcu_ili9881c_is_connected(dsi->id) &&
+		!lt9211_is_connected()) {
+		pr_info("dsi-%d panel and sn65dsi8x and lt9211 aren't connected\n", dsi->id);
+		return 0;
+	} else {
+		pr_info("dsi-%d panel  or sn65dsi8x or lt9211 is connected\n", dsi->id);
+	}
+#endif
+
 	ret = drm_of_find_panel_or_bridge(dsi->dev->of_node, 1, 0,
 					  &dsi->panel, &dsi->bridge);
 	if (ret) {

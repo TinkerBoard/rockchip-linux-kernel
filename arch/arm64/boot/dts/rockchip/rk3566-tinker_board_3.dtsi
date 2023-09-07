@@ -184,7 +184,7 @@
  * when dsi0 is enabled
  */
 &dsi0 {
-	status = "disabled";
+	status = "okay";
 };
 
 &dsi0_in_vp0 {
@@ -193,13 +193,6 @@
 
 &dsi0_in_vp1 {
 	status = "okay";
-};
-
-&dsi0_panel {
-	power-supply = <&vcc3v3_lcd0_n>;
-	reset-gpios = <&gpio3 RK_PA3 GPIO_ACTIVE_LOW>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&lcd0_rst_gpio>;
 };
 
 /*
@@ -332,7 +325,9 @@
 
 &i2c4 {
 	/* i2c4 sda conflict with camera pwdn */
-	status = "disabled";
+	status = "okay";
+	pinctrl-0 = <&i2c4m1_xfer>;
+	//clock-frequency=<400000>;
 
 	/*
 	 * gc2145 needs to be disabled,
@@ -365,6 +360,21 @@
 				remote-endpoint = <&dvp_in_bcam>;
 			};
 		};
+	};
+
+	tinker_mcu: tinker_mcu@45 {
+		compatible = "tinker_mcu";
+		reg = <0x45>;
+	};
+
+	tinker_mcu_ili9881c: tinker_mcu_ili9881c@36 {
+		compatible = "tinker_mcu_ili9881c";
+		reg = <0x36>;
+	};
+
+	tinker_ft5406: tinker_ft5406@38 {
+		compatible = "tinker_ft5406";
+		reg = <0x38>;
 	};
 };
 
@@ -541,7 +551,7 @@
 };
 
 &route_dsi0 {
-	status = "okay";
+	status = "disabled";
 	connect = <&vp1_out_dsi0>;
 };
 
