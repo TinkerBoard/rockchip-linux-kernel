@@ -13,7 +13,7 @@
 		mmc1 = &sdmmc0;
 		mmc2 = &sdmmc1;
 		mmc3 = &sdmmc2;
-                rtc0 = &rtc_isl1208;
+		rtc0 = &rtc_isl1208;
 	};
 
 	chosen: chosen {
@@ -102,25 +102,39 @@
 };
 
 &vp0 {
-        cursor-win-id = <ROCKCHIP_VOP2_CLUSTER0>;
+	cursor-win-id = <ROCKCHIP_VOP2_CLUSTER0>;
 };
 
 &pinctrl {
-        rtc {
-                pinctrl_externalrtc_reg: externalrtcreggrp {
-                        rockchip,pins = <0 RK_PD3 RK_FUNC_GPIO &pcfg_pull_up>;
-                };
-        };
+	rtc {
+		pinctrl_externalrtc_reg: externalrtcreggrp {
+			rockchip,pins = <0 RK_PD3 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
+	};
+
+	eeprom {
+		tb3_eeprom: tb3-eeprom {
+			rockchip,pins = <3 RK_PC1 RK_FUNC_GPIO &pcfg_pull_down>;
+		};
+	};
 };
 
 &i2c2 {
-        rtc_isl1208: rtc@6f {
-                compatible = "isil,isl1208";
-                pinctrl-names = "default";
-                pinctrl-0 = <&pinctrl_externalrtc_reg>;
-                interrupt-names = "irq";
-                interrupts-extended = <&gpio0 RK_PD3 IRQ_TYPE_EDGE_FALLING>;
-                reg = <0x6f>;
-                status = "okay";
-        };
+	m24c08@50 {
+		compatible = "atmel,24c08";
+		reg = <0x50>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&tb3_eeprom>;
+		status = "okay";
+	};
+
+	rtc_isl1208: rtc@6f {
+		compatible = "isil,isl1208";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_externalrtc_reg>;
+		interrupt-names = "irq";
+		interrupts-extended = <&gpio0 RK_PD3 IRQ_TYPE_EDGE_FALLING>;
+		reg = <0x6f>;
+		status = "okay";
+	};
 };
