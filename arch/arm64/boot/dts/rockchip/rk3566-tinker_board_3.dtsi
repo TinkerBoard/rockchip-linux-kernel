@@ -600,10 +600,6 @@
 	status = "okay";
 };
 
-&work_led {
-	gpios = <&gpio0 RK_PB7 GPIO_ACTIVE_HIGH>;
-};
-
 &wireless_bluetooth {
 	compatible = "bluetooth-platdata";
 	clocks = <&rk809 1>;
