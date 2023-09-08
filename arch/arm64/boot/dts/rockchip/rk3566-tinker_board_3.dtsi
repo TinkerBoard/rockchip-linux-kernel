@@ -254,7 +254,6 @@
 
 &i2c2 {
 	status = "okay";
-	pinctrl-0 = <&i2c2m1_xfer>;
 
 	/* split mode: lane0/1 */
 	ov5695: ov5695@36 {
@@ -388,9 +387,6 @@
  * power-supply should switche to vcc3v3_lcd1_n
  * when mipi panel is connected to dsi1.
  */
-&gt1x {
-	power-supply = <&vcc3v3_lcd0_n>;
-};
 
 &mipi_csi2 {
 	status = "okay";
