@@ -489,6 +489,28 @@
 			rockchip,pins = <3 RK_PA4 RK_FUNC_GPIO &pcfg_pull_none>;
 		};
 	};
+
+	panel-control {
+		/*pinctrl_hpd: hdp {
+			rockchip,pins = <0 RK_PC2 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+
+		pinctrl_vdd_en: vdd_en {
+			rockchip,pins = <1 RK_PB0 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+
+		pinctrl_bl_sys_en: bl_sys_en {
+			rockchip,pins = <1 RK_PA4 RK_FUNC_GPIO &pcfg_pull_none>;
+		};*/
+
+		pinctrl_bl_en: bl_en {
+			rockchip,pins = <2 RK_PC3 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+
+		/*pinctrl_lt9211_en: lt9211_en {
+			rockchip,pins = <0 RK_PD5 RK_FUNC_GPIO &pcfg_pull_none>;
+		};*/
+	};
 };
 
 &rkcif {
@@ -615,12 +637,12 @@
 	clocks = <&rk809 1>;
 	clock-names = "ext_clock";
 	//wifi-bt-power-toggle;
-	uart_rts_gpios = <&gpio2 RK_PB5 GPIO_ACTIVE_LOW>;
+	//uart_rts_gpios = <&gpio2 RK_PB5 GPIO_ACTIVE_LOW>;
 	pinctrl-names = "default", "rts_gpio";
 	pinctrl-0 = <&uart1m0_rtsn>;
 	pinctrl-1 = <&uart1_gpios>;
 	BT,reset_gpio    = <&gpio2 RK_PB7 GPIO_ACTIVE_HIGH>;
 	BT,wake_gpio     = <&gpio2 RK_PC1 GPIO_ACTIVE_HIGH>;
 	BT,wake_host_irq = <&gpio2 RK_PC0 GPIO_ACTIVE_HIGH>;
-	status = "okay";
+	status = "disable";
 };
