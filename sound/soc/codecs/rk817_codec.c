@@ -40,7 +40,9 @@
 #define RK817_CODEC_ALL	(RK817_CODEC_PLAYBACK |\
 	RK817_CODEC_CAPTURE | RK817_CODEC_INCALL)
 
+#ifdef CONFIG_ASUS_TB3N_SPK
 #define SPK_EN 115
+#endif
 
 /*
  * DDAC L/R volume setting
@@ -65,6 +67,7 @@
 #define CODEC_SET_SPK 1
 #define CODEC_SET_HP 2
 
+#ifdef CONFIG_ASUS_TB3N_SPK
 extern int jack_connection_status;
 
 static int spk_enable_init(void)
@@ -90,6 +93,7 @@ err_free_gpio_spk:
 err_gpio_spk:
 	return ret;
 }
+#endif
 
 struct rk817_codec_priv {
 	struct snd_soc_component *component;
@@ -1073,11 +1077,13 @@ static int rk817_digital_mute(struct snd_soc_dai *dai, int mute, int stream)
 	DBG("%s %d\n", __func__, mute);
 
 	if (mute) {
+#ifdef CONFIG_ASUS_TB3N_SPK
 		if (rk817->only_factory_use || jack_connection_status == 0) {
 			gpio_set_value(SPK_EN, 0);
 			pr_info("rk817_digital_mute mute, SPK_EN = %s\n", gpio_get_value(SPK_EN)? "H":"L");
 			msleep(1);
 		}
+#endif
 		rk817_codec_ctl_gpio(rk817, CODEC_SET_SPK, 0);
 		rk817_codec_ctl_gpio(rk817, CODEC_SET_HP, 0);
 
@@ -1125,11 +1131,13 @@ static int rk817_digital_mute(struct snd_soc_dai *dai, int mute, int stream)
 					PWD_DACL_ON | PWD_DACR_ON);
 			rk817_codec_ctl_gpio(rk817, CODEC_SET_SPK, 0);
 			rk817_codec_ctl_gpio(rk817, CODEC_SET_HP, 1);
+	#ifdef CONFIG_ASUS_TB3N_SPK
 			if (rk817->only_factory_use || jack_connection_status == 0) {
 				msleep(2);
 				gpio_set_value(SPK_EN, 1);
 				pr_info("rk817_digital_mute unmute, SPK_EN = %s\n", gpio_get_value(SPK_EN)? "H":"L");
 			}
+	#endif
 			break;
 		case SPK_HP:
 		case RING_SPK_HP:
@@ -1261,8 +1269,9 @@ static int rk817_probe(struct snd_soc_component *component)
 	struct rk817_codec_priv *rk817 = snd_soc_component_get_drvdata(component);
 	int chip_name = 0;
 	int chip_ver = 0;
+#ifdef CONFIG_ASUS_TB3N_SPK
 	int ret = 0;
-
+#endif
 	DBG("%s\n", __func__);
 
 	if (!rk817) {
@@ -1270,11 +1279,11 @@ static int rk817_probe(struct snd_soc_component *component)
 			__func__);
 		return -EINVAL;
 	}
-
+#ifdef CONFIG_ASUS_TB3N_SPK
 	ret = spk_enable_init();
 	if (ret)
                 dev_err(component->dev, "Request SPK_EN Failed (%d)\n", ret);
-
+#endif
 	snd_soc_component_init_regmap(component, rk817->regmap);
 	rk817->component = component;
 	rk817->playback_path = OFF;

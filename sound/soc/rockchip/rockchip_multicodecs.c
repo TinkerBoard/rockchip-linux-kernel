@@ -42,7 +42,9 @@
 #define WAIT_CARDS	(SNDRV_CARDS - 1)
 #define DEFAULT_MCLK_FS	256
 
+#ifdef CONFIG_ASUS_TB3N_SPK
 int jack_connection_status;
+#endif
 
 struct adc_keys_button {
 	u32 voltage;
@@ -240,15 +242,21 @@ static void adc_jack_handler(struct work_struct *work)
 	};
 
 	if (!gpiod_get_value(mc_data->hp_det_gpio)) {
+#ifdef CONFIG_ASUS_TB3N_SPK
 		snd_soc_jack_report(jack_headset, SND_JACK_HEADPHONE, SND_JACK_HEADSET);
+#else
+		snd_soc_jack_report(jack_headset, 0, SND_JACK_HEADSET);
+#endif
 		extcon_set_state_sync(mc_data->extcon,
 				EXTCON_JACK_HEADPHONE, false);
 		extcon_set_state_sync(mc_data->extcon,
 				EXTCON_JACK_MICROPHONE, false);
+#ifdef CONFIG_ASUS_TB3N_SPK
 		jack_connection_status = 0;
+#endif
 		ret = call_usermodehelper(argv_0[0], argv_0, envp, UMH_WAIT_PROC);
 		if (ret != 0)
-			printk("failed to call_usermodehelper, ret=%d, status=%d\n", ret, jack_connection_status);
+			printk("failed to call_usermodehelper, ret=%d, status is disconnected\n", ret);
 
 		if (mc_data->poller)
 			mc_keys_poller_stop(mc_data->poller);
@@ -260,10 +268,12 @@ static void adc_jack_handler(struct work_struct *work)
 		snd_soc_jack_report(jack_headset, SND_JACK_HEADPHONE, SND_JACK_HEADSET);
 		extcon_set_state_sync(mc_data->extcon, EXTCON_JACK_HEADPHONE, true);
 		extcon_set_state_sync(mc_data->extcon, EXTCON_JACK_MICROPHONE, false);
+#ifdef CONFIG_ASUS_TB3N_SPK
 		jack_connection_status = 1;
+#endif
 		ret = call_usermodehelper(argv_1[0], argv_1, envp, UMH_WAIT_PROC);
 		if (ret != 0)
-			printk("failed to call_usermodehelper, ret=%d, status=%d\n", ret, jack_connection_status);
+			printk("failed to call_usermodehelper, ret=%d, status is connected\n", ret);
 		return;
 	}
 	ret = iio_read_channel_processed(mc_data->adc, &adc);
@@ -287,7 +297,9 @@ static void adc_jack_handler(struct work_struct *work)
 	}
 };
 
+#ifdef CONFIG_ASUS_TB3N_SPK
 EXPORT_SYMBOL(jack_connection_status);
+#endif
 
 static irqreturn_t headset_det_irq_thread(int irq, void *data)
 {
