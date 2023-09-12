@@ -2875,8 +2875,10 @@ void setmmcEmergency() {
         ret = regulator_enable(mmc->supply.vmmc);
     }
 
-    if (!IS_ERR(mmc->supply.vqmmc))
+    if (!IS_ERR(mmc->supply.vqmmc)) {
+        ret = regulator_enable(mmc->supply.vqmmc);
         regulator_set_voltage(mmc->supply.vqmmc, 3300000, 3300000);
+    }
 
 }
 EXPORT_SYMBOL(setmmcEmergency);
