@@ -5093,6 +5093,7 @@ int stmmac_reinit_ringparam(struct net_device *dev, u32 rx_size, u32 tx_size)
  * Return:
  * returns 0 on success, otherwise errno.
  */
+extern int get_board_model(void);
 int stmmac_dvr_probe(struct device *device,
 		     struct plat_stmmacenet_data *plat_dat,
 		     struct stmmac_resources *res)
@@ -5161,12 +5162,17 @@ int stmmac_dvr_probe(struct device *device,
 	if (ret)
 		goto error_hw_init;
 
-	if (!strcmp(dev_name(device), "fe2a0000.ethernet"))
+
+	if (get_board_model() == 3568) {
+		if (!strcmp(dev_name(device), "fe2a0000.ethernet"))
+			gmac_num = 0;
+		else if (!strcmp(dev_name(device), "fe010000.ethernet"))
+			gmac_num = 1;
+		else
+			gmac_num = 0;
+	} else {
 		gmac_num = 0;
-	else if (!strcmp(dev_name(device), "fe010000.ethernet"))
-		gmac_num = 1;
-	else
-		gmac_num = 0;
+	}
 
 	ret = stmmac_check_ether_addr(priv);
 	dev_info(priv->device, "GMAC%d get MAC address: ret = %d\n", gmac_num, ret);

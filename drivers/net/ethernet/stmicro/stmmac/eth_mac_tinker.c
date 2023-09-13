@@ -28,7 +28,7 @@ int eth_mac_eeprom(u8 *eth_mac, int gmac_num)
 	int ret;
 
 	memset(eth_mac, 0, 6);
-	pr_info("GMAC%d Read the Ethernet MAC address from EEPROM:", gmac_num);
+	pr_info("GMAC Read the Ethernet MAC address from EEPROM(%d): ", gmac_num);
 #ifdef CONFIG_EEPROM_AT24
 	if (gmac_num == 1)
 		ret = at24_read_eeprom(eth_mac, 6, 6);
@@ -39,7 +39,7 @@ int eth_mac_eeprom(u8 *eth_mac, int gmac_num)
 #endif
 
 	for(i=0; i<5; i++)
-		pr_info("%2.2x:", eth_mac[i]);
-	pr_info("%2.2x\n", eth_mac[i]);
+		printk(KERN_CONT "%2.2x:", eth_mac[i]);
+	printk(KERN_CONT "%2.2x", eth_mac[i]);
 	return ret;
 }
