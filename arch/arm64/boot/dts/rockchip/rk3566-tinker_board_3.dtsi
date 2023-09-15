@@ -380,6 +380,40 @@
 		compatible = "tinker_ft5406";
 		reg = <0x38>;
 	};
+
+	dsi_edp_bridge: sn65dsi86@2d {
+		compatible = "sn65dsi86";
+		status = "disabled";
+		reg = <0x2d>;
+
+		dsi-lanes = <4>;//u-boot
+		data-lanes-size = <2>;//u-boot
+		bpc=<8>;//u-boot
+		data-lanes = <0 1>;
+		lane-polarities = <0 0 0 0>;
+
+		t1=<0>;
+		t2=<0>;
+		t3=<200>;
+		t4=<20>;
+		t5=<0>;
+		t6=<0>;
+		t7=<0>;
+		t8=<100>;
+		t12= <500>;
+		t14= <15>;//Backlight node:enable_delay = <15>;
+		t15 = <15>;//Backlight node:post-pwm-on-delay-ms = <15>;
+		t16= <15>;//Backlight node:pwm-off-delay-ms = <15>;
+		t17 = <15>;//Backlight node:disable_delay = <15>;
+
+		pinctrl-names = "default";
+		pinctrl-0 =  <&pinctrl_sn65dsi86_en>, <&pinctrl_lvds_vdd_en>, <&pinctrl_sn65dsi86_irq>, <&pinctrl_pwr_source>;
+
+		EN-gpios = <&gpio2 RK_PC2 GPIO_ACTIVE_HIGH>;
+		edp_vdd_en-gpios = <&gpio2 RK_PC1 GPIO_ACTIVE_HIGH>;
+		dsi86_irq-gpios = <&gpio2 RK_PC4 GPIO_ACTIVE_HIGH>;
+		pwr_source-gpios = <&gpio2 RK_PC5 GPIO_ACTIVE_HIGH>;
+	};
 };
 
 &i2s2_2ch {
@@ -501,20 +535,25 @@
 	};
 
 	panel-control {
-		/*pinctrl_hpd: hdp {
-			rockchip,pins = <0 RK_PC2 RK_FUNC_GPIO &pcfg_pull_none>;
+
+		pinctrl_sn65dsi86_en: sn65dsi86_en {
+			rockchip,pins = <2 RK_PC2 RK_FUNC_GPIO   &pcfg_pull_none>;
 		};
 
-		pinctrl_vdd_en: vdd_en {
-			rockchip,pins = <1 RK_PB0 RK_FUNC_GPIO &pcfg_pull_none>;
+		pinctrl_sn65dsi86_irq: sn65dsi86_irq{
+			rockchip,pins = <2 RK_PC4 RK_FUNC_GPIO  &pcfg_pull_none>;
 		};
 
-		pinctrl_bl_sys_en: bl_sys_en {
-			rockchip,pins = <1 RK_PA4 RK_FUNC_GPIO &pcfg_pull_none>;
-		};*/
-
-		pinctrl_bl_en: bl_en {
+		pinctrl_lvds_bl_en: lvds_bl_en {
 			rockchip,pins = <2 RK_PC3 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+
+		pinctrl_lvds_vdd_en: lvds_vdd_en {
+			rockchip,pins = <2 RK_PC1 RK_FUNC_GPIO  &pcfg_pull_none>;
+		};
+
+		pinctrl_pwr_source: pwr_source {
+			rockchip,pins = <2 RK_PC5 RK_FUNC_GPIO  &pcfg_pull_none>;
 		};
 
 		/*pinctrl_lt9211_en: lt9211_en {

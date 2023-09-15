@@ -42,6 +42,12 @@
 #include <drm/drm_dsc.h>
 
 #include "panel-simple.h"
+#include "../bridge/sn65dsi8x/sn65dsi86.h"
+
+extern void sn65dsi86_loader_protect(bool on);
+extern void sn65dsi86_bridge_disable(void);
+extern bool sn65dsi86_is_connected(void);
+extern struct sn65dsi86_data *g_sn65dsi86;
 
 #ifdef CONFIG_DRM_I2C_LT9211
 //extern void lt9211_loader_protect(bool on);
@@ -539,6 +545,9 @@ int panel_simple_loader_protect(struct drm_panel *panel)
 	p->prepared = true;
 	p->enabled = true;
 
+	if (sn65dsi86_is_connected())
+		sn65dsi86_loader_protect(true);
+
 	return 0;
 }
 EXPORT_SYMBOL(panel_simple_loader_protect);
@@ -576,6 +585,9 @@ static int panel_simple_unprepare(struct drm_panel *panel)
 		backlight_update_status(p->backlight);
 	}
 #endif
+
+	if (sn65dsi86_is_connected())
+		sn65dsi86_bridge_disable();
 
 	if (lt9211_is_connected()) {
         if(p->desc->pwseq_delay.t3){
@@ -5525,6 +5537,15 @@ void lt9211_setup_desc(struct panel_desc_dsi *desc)
     lt9211_set_videomode(vm);
 }
 
+void sn65dsi86_setup_desc(struct panel_desc_dsi *desc)
+{
+	drm_display_mode_to_videomode(desc->desc.modes, &g_sn65dsi86->vm);
+	memcpy(&g_sn65dsi86->mode, desc->desc.modes, sizeof(struct drm_display_mode));
+	g_sn65dsi86->dsi_lanes = desc->lanes;
+	g_sn65dsi86->format = desc->format;
+	g_sn65dsi86->bpc = desc->desc.bpc;
+}
+
 bool is_dsi_panel_connected(void)
 {
 	if (dsi_panel != MIPI_DSI_NONE)
@@ -5588,6 +5609,15 @@ static int panel_simple_dsi_probe(struct mipi_dsi_device *dsi)
 	{
 		memcpy(d, &lkw070n13000_v2_dec, sizeof(lkw070n13000_v2_dec));
 		panel_simple_of_get_cmd(dev, &d->desc, dsi_id);
+	}
+	else if (sn65dsi86_is_connected()) {
+		err = panel_simple_dsi_of_get_desc_data(dev, d);
+		if (err) {
+			dev_err(dev, "failed to get desc data: %d\n", err);
+			return err;
+		}
+
+		sn65dsi86_setup_desc(d);
 	}
 #else
 	if (!id->data) {

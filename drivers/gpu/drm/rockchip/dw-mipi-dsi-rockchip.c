@@ -363,6 +363,7 @@ static int tinker_mcu_is_connected(int dsi_id)  { return 0; }
 static int tinker_mcu_ili9881c_is_connected(int dsi_id)  { return 0; }
 #endif
 
+extern bool sn65dsi86_is_connected(void);
 extern bool is_dsi_panel_connected(void);
 
 static int max_mbps_to_parameter(unsigned int max_mbps)
@@ -1028,6 +1029,7 @@ static int dw_mipi_dsi_rockchip_bind(struct device *dev,
 #if defined(CONFIG_TINKER_MCU)
 	if(!tinker_mcu_is_connected(dsi->id) &&
 		!tinker_mcu_ili9881c_is_connected(dsi->id) &&
+		!sn65dsi86_is_connected() &&
 		!lt9211_is_connected() &&
 		!is_dsi_panel_connected()) {
 		pr_info("dsi-%d panel and sn65dsi8x and lt9211 aren't connected\n", dsi->id);
