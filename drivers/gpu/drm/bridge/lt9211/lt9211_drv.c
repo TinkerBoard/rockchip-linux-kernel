@@ -807,7 +807,7 @@ void lt9211_lvds_tx_en(struct lt9211_data *lt9211)
 	    lt9211_write(lt9211->client, 0x3b, 0x38);//signal-port lvds output Enable
 	}
 }
-/*
+
 static void ConvertBoard_power_on(struct lt9211_data *lt9211)
 {
 	printk(KERN_INFO "%s \n", __func__);
@@ -824,7 +824,7 @@ static void ConvertBoard_power_off(struct lt9211_data *lt9211)
 		gpiod_set_value_cansleep(lt9211->pwr_source_gpio, 0);
 	}
 }
-*/
+
 static void lt9211_chip_enable(struct lt9211_data *lt9211)
 {
 	printk(KERN_INFO "%s \n", __func__);
@@ -1083,12 +1083,12 @@ static int lt9211_parse_dt(struct device_node *np,
 		if(data->uboot) {
 			data->lt9211_en_gpio = devm_gpiod_get_optional(dev, "EN",  GPIOD_OUT_HIGH);
 			data->lvds_vdd_en_gpio = devm_gpiod_get_optional(dev, "lvds_vdd_en", GPIOD_OUT_HIGH);
-			//data->pwr_source_gpio = devm_gpiod_get_optional(dev, "pwr_source", GPIOD_OUT_HIGH);
+			data->pwr_source_gpio = devm_gpiod_get_optional(dev, "pwr_source", GPIOD_OUT_HIGH);
 			data->bl_sys_en_gpio = devm_gpiod_get_optional(dev, "bl_sys_en", GPIOD_OUT_HIGH);
 		} else {
 			data->lt9211_en_gpio = devm_gpiod_get_optional(dev, "EN",  GPIOD_OUT_LOW);
 			data->lvds_vdd_en_gpio = devm_gpiod_get_optional(dev, "lvds_vdd_en", GPIOD_OUT_LOW);
-			//data->pwr_source_gpio = devm_gpiod_get_optional(dev, "pwr_source", GPIOD_OUT_LOW);
+			data->pwr_source_gpio = devm_gpiod_get_optional(dev, "pwr_source", GPIOD_OUT_LOW);
 			data->bl_sys_en_gpio = devm_gpiod_get_optional(dev, "bl_sys_en", GPIOD_OUT_LOW);
 
 		}
@@ -1100,11 +1100,11 @@ static int lt9211_parse_dt(struct device_node *np,
 		if (IS_ERR(data->lvds_vdd_en_gpio)) {
 			printk(KERN_INFO "lt9211_parse_dt: failed to get lvds_vdd_en_gpio\n");
 		}
-	/*
+	
 		if (IS_ERR(data->pwr_source_gpio)) {
 			printk(KERN_INFO "lt9211_parse_dt: failed to get  pwr_source gpio\n");
 		}
-	*/
+	
 
 		if (IS_ERR(data->bl_sys_en_gpio)) {
 			printk(KERN_INFO "lt9211_parse_dt: failed to get  bl_sys_en_gpio\n");
@@ -1146,7 +1146,7 @@ static int lt9211_probe(struct i2c_client *i2c, const struct i2c_device_id *id)
 		return ret;
 
 	if(lt9211->enable_lt9211) {
-		//ConvertBoard_power_on(lt9211);
+		ConvertBoard_power_on(lt9211);
 		lt9211_chip_enable(lt9211);
 		lt9211_detect(lt9211);
 
@@ -1180,13 +1180,13 @@ static int lt9211_remove(struct i2c_client *i2c)
 
 static void  lt9211_shutdown(struct i2c_client *i2c)
 {
-	//struct lt9211_data *lt9211 = i2c_get_clientdata(i2c);
+	struct lt9211_data *lt9211 = i2c_get_clientdata(i2c);
 
 	printk(KERN_INFO "%s\n", __func__);
 
 	lt9211_bridge_disable();
 
-	//ConvertBoard_power_off(lt9211);
+	ConvertBoard_power_off(lt9211);
 	return;
 }
 
