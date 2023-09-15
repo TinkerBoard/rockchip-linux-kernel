@@ -1650,7 +1650,7 @@
 				regulator-boot-on;
 				regulator-name = "vcc_3v3";
 				regulator-state-mem {
-					regulator-off-in-suspend;
+					regulator-on-in-suspend;
 				};
 			};
 
