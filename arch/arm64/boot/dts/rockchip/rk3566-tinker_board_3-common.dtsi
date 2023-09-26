@@ -1680,14 +1680,6 @@
 	};
 };
 
-&i2c1 {
-	status = "okay";
-
-};
-
-&i2c5 {
-	status = "okay";
-};
 
 &i2s0_8ch {
 	status = "okay";
@@ -1818,6 +1810,15 @@
 	wireless-bluetooth {
 		uart8_gpios: uart8-gpios {
 			rockchip,pins = <2 RK_PB1 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	fourty_pin_vcc {
+		fourty_pin5v0: fourty-pin5v0 {
+			rockchip,pins = <0 RK_PC3 RK_FUNC_GPIO &pcfg_output_high>;
+		};
+		fourty_pin3v3: fourty-pin3v3 {
+			rockchip,pins = <0 RK_PC5 RK_FUNC_GPIO &pcfg_output_high>;
 		};
 	};
 };
@@ -2141,4 +2142,66 @@
 
 &vop_mmu {
 	status = "okay";
+};
+
+
+&i2c1 {
+	status = "disabled";
+};
+&i2c5 {
+	status = "disabled";
+};
+
+&uart0 {
+	pinctrl-names = "default";
+        pinctrl-0 = <&uart0_xfer &uart0_rtsn &uart0_ctsn>;
+	status = "disabled";
+};
+&uart1 {
+	status = "disabled";
+};
+&spi3 {
+        pinctrl-0 = <&spi3m1_pins &spi3m1_cs0>;
+        cs-gpios = <0>;
+        status = "disabled";
+        spidev@0 {
+                compatible = "rockchip,spidev";
+                reg = <0>;
+                spi-max-frequency = <50000000>;
+                status = "okay";
+        };
+};
+
+&spi2 {
+        pinctrl-0 = <&spi2m0_pins &spi2m0_cs0 &spi2m0_cs1>;
+        cs-gpios = <0>, <0>;
+        status = "disabled";
+        spidev@0 {
+                compatible = "rockchip,spidev";
+                reg = <0>;
+                spi-max-frequency = <50000000>;
+                status = "okay";
+        };
+	spidev@1 {
+                compatible = "rockchip,spidev";
+                reg = <1>;
+                spi-max-frequency = <50000000>;
+                status = "okay";
+        };
+};
+&spdif_8ch {
+       pinctrl-0 = <&spdifm1_tx>;
+       status = "disabled";
+};
+&pwm7 {
+	status = "disabled";
+};
+&pwm8 {
+	status = "disabled";
+};
+&pwm9 {
+	status = "disabled";
+};
+&xin32k {
+	status = "disabled";
 };
