@@ -544,10 +544,10 @@ int panel_simple_loader_protect(struct drm_panel *panel)
 
 	p->prepared = true;
 	p->enabled = true;
-
+#if defined(CONFIG_DRM_I2C_SN65DSI86)
 	if (sn65dsi86_is_connected())
 		sn65dsi86_loader_protect(true);
-
+#endif
 	return 0;
 }
 EXPORT_SYMBOL(panel_simple_loader_protect);
@@ -585,10 +585,10 @@ static int panel_simple_unprepare(struct drm_panel *panel)
 		backlight_update_status(p->backlight);
 	}
 #endif
-
+#if defined(CONFIG_DRM_I2C_SN65DSI86)
 	if (sn65dsi86_is_connected())
 		sn65dsi86_bridge_disable();
-
+#endif
 	if (lt9211_is_connected()) {
         if(p->desc->pwseq_delay.t3){
             msleep(p->desc->pwseq_delay.t7);//Backlight off to Backlight sys Disable
@@ -5537,6 +5537,7 @@ void lt9211_setup_desc(struct panel_desc_dsi *desc)
     lt9211_set_videomode(vm);
 }
 
+#if defined(CONFIG_DRM_I2C_SN65DSI86)
 void sn65dsi86_setup_desc(struct panel_desc_dsi *desc)
 {
 	drm_display_mode_to_videomode(desc->desc.modes, &g_sn65dsi86->vm);
@@ -5545,6 +5546,7 @@ void sn65dsi86_setup_desc(struct panel_desc_dsi *desc)
 	g_sn65dsi86->format = desc->format;
 	g_sn65dsi86->bpc = desc->desc.bpc;
 }
+#endif
 
 bool is_dsi_panel_connected(void)
 {
@@ -5610,6 +5612,7 @@ static int panel_simple_dsi_probe(struct mipi_dsi_device *dsi)
 		memcpy(d, &lkw070n13000_v2_dec, sizeof(lkw070n13000_v2_dec));
 		panel_simple_of_get_cmd(dev, &d->desc, dsi_id);
 	}
+#if defined(CONFIG_DRM_I2C_SN65DSI86)
 	else if (sn65dsi86_is_connected()) {
 		err = panel_simple_dsi_of_get_desc_data(dev, d);
 		if (err) {
@@ -5619,6 +5622,7 @@ static int panel_simple_dsi_probe(struct mipi_dsi_device *dsi)
 
 		sn65dsi86_setup_desc(d);
 	}
+#endif
 #else
 	if (!id->data) {
 		d = devm_kzalloc(dev, sizeof(*d), GFP_KERNEL);

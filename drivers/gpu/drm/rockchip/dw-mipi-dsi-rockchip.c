@@ -1029,7 +1029,9 @@ static int dw_mipi_dsi_rockchip_bind(struct device *dev,
 #if defined(CONFIG_TINKER_MCU)
 	if(!tinker_mcu_is_connected(dsi->id) &&
 		!tinker_mcu_ili9881c_is_connected(dsi->id) &&
+#if defined(CONFIG_DRM_I2C_SN65DSI86)
 		!sn65dsi86_is_connected() &&
+#endif
 		!lt9211_is_connected() &&
 		!is_dsi_panel_connected()) {
 		pr_info("dsi-%d panel and sn65dsi8x and lt9211 aren't connected\n", dsi->id);
